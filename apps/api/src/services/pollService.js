@@ -372,7 +372,7 @@ export async function listDrafts(userId, { page = 1, limit = 20 } = {}) {
       isAnonymous: polls.isAnonymous,
       closedAt: polls.closedAt,
       createdAt: polls.createdAt,
-      optionsCount: sql`(SELECT COUNT(*)::int FROM ${pollOptions} WHERE ${pollOptions.pollId} = ${polls.id})`.as('options_count'),
+      optionsCount: sql`(SELECT COUNT(*)::int FROM poll_options WHERE poll_options.poll_id = polls.id)`.as('options_count'),
     })
     .from(polls)
     .where(and(eq(polls.userId, userId), isNull(polls.topicId)))
