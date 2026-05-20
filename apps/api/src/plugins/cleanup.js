@@ -4,6 +4,7 @@ import { qrLoginRequests, users, moderationLogs } from '../db/schema.js';
 import { and, eq, lt, sql } from 'drizzle-orm';
 import { anonymizeUser } from '../services/user/index.js';
 import moderationLogService from '../services/moderationLogService.js';
+import { cleanupOrphanPolls } from '../services/pollService.js';
 import { EVENTS } from '../constants/events.js';
 
 /**
@@ -144,6 +145,11 @@ async function cleanupPlugin(fastify, options) {
       .where(lt(moderationLogs.createdAt, threshold));
 
     return result.rowCount || 0;
+  });
+
+  // 5. 清理孤儿投票（创建超过 30 分钟未绑定 topic）
+  registerCleanupTask('orphan-polls', async () => {
+    return await cleanupOrphanPolls();
   });
 
   // 启动定时任务 (每2小时)
