@@ -4,9 +4,12 @@ import {
   castVote,
   listVoters,
   deletePoll,
+  listDrafts,
+  listByTopic,
+  updateDraft,
 } from '../../services/pollService.js';
 import db from '../../db/index.js';
-import { polls } from '../../db/schema.js';
+import { polls, topics } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
 
 export default async function pollRoutes(fastify, options) {
@@ -59,6 +62,33 @@ export default async function pollRoutes(fastify, options) {
         }
         throw err;
       }
+    }
+  );
+
+  // GET /polls/drafts — 列出当前用户的草稿
+  fastify.get(
+    '/drafts',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['polls'],
+        description: '列出当前用户的草稿（未绑话题）',
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: 'object',
+          properties: {
+            page: { type: 'number', default: 1 },
+            limit: { type: 'number', default: 20, maximum: 100 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const result = await listDrafts(request.user.id, {
+        page: request.query.page,
+        limit: request.query.limit,
+      });
+      return result;
     }
   );
 
@@ -173,6 +203,97 @@ export default async function pollRoutes(fastify, options) {
     }
   );
 
+  // GET /polls/by-topic/:topicId — 列出某话题已绑的所有 polls
+  fastify.get(
+    '/by-topic/:topicId',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['polls'],
+        description: '列出某话题已绑的所有 polls（仅作者或 dashboard.topics）',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['topicId'],
+          properties: { topicId: { type: 'number' } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const [topic] = await db
+        .select({ id: topics.id, userId: topics.userId, categoryId: topics.categoryId })
+        .from(topics)
+        .where(eq(topics.id, request.params.topicId))
+        .limit(1);
+
+      if (!topic) {
+        return reply.code(404).send({ error: '话题不存在' });
+      }
+
+      const isOwner = request.user.id === topic.userId;
+      const hasDashboard = await fastify.permission.can(request, 'dashboard.topics', {
+        categoryId: topic.categoryId,
+      });
+      if (!isOwner && !hasDashboard) {
+        return reply.code(403).send({ error: '没有权限查看此话题的投票列表' });
+      }
+
+      const result = await listByTopic(request.params.topicId);
+      return result;
+    }
+  );
+
+  // PUT /polls/:id — 编辑草稿（仅 owner 且未绑话题）
+  fastify.put(
+    '/:id',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['polls'],
+        description: '编辑草稿投票',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'number' } },
+        },
+        body: {
+          type: 'object',
+          required: ['question', 'options', 'selectionType'],
+          properties: {
+            question: { type: 'string', minLength: 1, maxLength: 500 },
+            options: {
+              type: 'array',
+              minItems: 2,
+              maxItems: 20,
+              items: { type: 'string', minLength: 1, maxLength: 500 },
+            },
+            selectionType: { type: 'string', enum: ['single', 'multiple'] },
+            maxChoices: { type: ['integer', 'null'], minimum: 1 },
+            isAnonymous: { type: 'boolean', default: false },
+            closedAt: { type: ['string', 'null'], format: 'date-time' },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { closedAt, ...rest } = request.body;
+        const result = await updateDraft(
+          request.params.id,
+          { ...rest, closedAt: closedAt ? new Date(closedAt) : null },
+          request.user.id
+        );
+        return result;
+      } catch (err) {
+        if (err.statusCode) {
+          return reply.code(err.statusCode).send({ error: err.message });
+        }
+        throw err;
+      }
+    }
+  );
+
   // DELETE /polls/:id — 删除投票
   fastify.delete(
     '/:id',
@@ -210,8 +331,15 @@ export default async function pollRoutes(fastify, options) {
         await fastify.permission.check(request, 'topic.poll.delete');
       }
 
-      await deletePoll(request.params.id);
-      return { success: true };
+      try {
+        await deletePoll(request.params.id, { isAdmin: hasDashboard });
+        return { success: true };
+      } catch (err) {
+        if (err.statusCode) {
+          return reply.code(err.statusCode).send({ error: err.message });
+        }
+        throw err;
+      }
     }
   );
 }
