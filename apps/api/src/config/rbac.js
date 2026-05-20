@@ -215,6 +215,22 @@ export const SYSTEM_PERMISSIONS = [
     isSystem: true,
     conditions: [],
   },
+  {
+    slug: 'topic.poll.create',
+    name: '创建投票',
+    module: 'topic',
+    action: 'poll.create',
+    isSystem: true,
+    conditions: [],
+  },
+  {
+    slug: 'topic.poll.delete',
+    name: '删除投票',
+    module: 'topic',
+    action: 'poll.delete',
+    isSystem: true,
+    conditions: [],
+  },
 
   // ========== 回复权限 ==========
   {
@@ -462,6 +478,14 @@ export const SYSTEM_PERMISSIONS = [
     conditions: [],
   },
   {
+    slug: 'dashboard.polls',
+    name: '后台管理投票',
+    module: 'dashboard',
+    action: 'polls',
+    isSystem: true,
+    conditions: [],
+  },
+  {
     slug: 'dashboard.settings',
     name: '系统配置',
     module: 'dashboard',
@@ -540,6 +564,7 @@ export const ROLE_PERMISSION_MAP = {
   user: [
     // 话题：创建、查看、编辑/删除自己的
     'topic.create', 'topic.read', 'topic.update', 'topic.delete',
+    'topic.poll.create', 'topic.poll.delete',
     // 回复：创建、查看、编辑/删除自己的
     'post.create', 'post.read', 'post.update', 'post.delete',
     // 用户：查看、编辑、注销自己的资料
