@@ -194,8 +194,8 @@ export async function castVote(pollId, userId, optionIds) {
     });
     return { success: true };
   } catch (err) {
-    // PG UNIQUE violation
-    if (err.code === '23505') {
+    // PG UNIQUE violation (drizzle wraps the underlying error in err.cause)
+    if (err.code === '23505' || err.cause?.code === '23505') {
       throw Object.assign(new Error('您已投过票'), { statusCode: 409 });
     }
     throw err;
