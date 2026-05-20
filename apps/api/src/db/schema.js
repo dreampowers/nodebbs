@@ -1040,7 +1040,7 @@ export const pollOptions = pgTable(
       .notNull()
       .references(() => polls.id, { onDelete: 'cascade' }),
     text: text('text').notNull(),
-    displayOrder: integer('display_order').notNull().default(0),
+    displayOrder: integer('display_order').notNull(),
     voteCount: integer('vote_count').notNull().default(0),
   },
   (table) => [
@@ -1073,7 +1073,7 @@ export const pollVotes = pgTable(
   },
   (table) => [
     uniqueIndex('poll_votes_poll_user_option_idx').on(table.pollId, table.userId, table.optionId),
-    index('poll_votes_poll_user_idx').on(table.pollId, table.userId),
+    index('poll_votes_poll_option_idx').on(table.pollId, table.optionId),
   ]
 );
 
