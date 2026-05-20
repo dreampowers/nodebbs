@@ -6,6 +6,7 @@ import {
   boolean,
   index,
   unique,
+  uniqueIndex,
   integer,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
@@ -991,6 +992,102 @@ export const qrLoginRequests = pgTable(
 export const qrLoginRequestsRelations = relations(qrLoginRequests, ({ one }) => ({
   user: one(users, {
     fields: [qrLoginRequests.userId],
+    references: [users.id],
+  }),
+}));
+
+// ============ Polls (话题投票) ============
+export const polls = pgTable(
+  'polls',
+  {
+    ...$defaults,
+    topicId: integer('topic_id').references(() => topics.id, { onDelete: 'cascade' }), // 允许 NULL：创建到绑定的过渡期
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    question: text('question').notNull(),
+    selectionType: varchar('selection_type', { length: 20 }).notNull(), // 'single' | 'multiple'
+    maxChoices: integer('max_choices'), // 仅 selectionType='multiple' 用
+    isAnonymous: boolean('is_anonymous').notNull().default(false),
+    closedAt: timestamp('closed_at', { withTimezone: true }), // NULL = 永久开放
+    totalVoters: integer('total_voters').notNull().default(0),
+  },
+  (table) => [
+    index('polls_topic_idx').on(table.topicId),
+    index('polls_created_by_idx').on(table.createdBy),
+  ]
+);
+
+export const pollsRelations = relations(polls, ({ one, many }) => ({
+  topic: one(topics, {
+    fields: [polls.topicId],
+    references: [topics.id],
+  }),
+  creator: one(users, {
+    fields: [polls.createdBy],
+    references: [users.id],
+  }),
+  options: many(pollOptions),
+  votes: many(pollVotes),
+}));
+
+// ============ Poll Options (投票选项) ============
+export const pollOptions = pgTable(
+  'poll_options',
+  {
+    ...$defaults,
+    pollId: integer('poll_id')
+      .notNull()
+      .references(() => polls.id, { onDelete: 'cascade' }),
+    text: text('text').notNull(),
+    displayOrder: integer('display_order').notNull().default(0),
+    voteCount: integer('vote_count').notNull().default(0),
+  },
+  (table) => [
+    uniqueIndex('poll_options_poll_order_idx').on(table.pollId, table.displayOrder),
+  ]
+);
+
+export const pollOptionsRelations = relations(pollOptions, ({ one, many }) => ({
+  poll: one(polls, {
+    fields: [pollOptions.pollId],
+    references: [polls.id],
+  }),
+  votes: many(pollVotes),
+}));
+
+// ============ Poll Votes (投票记录) ============
+export const pollVotes = pgTable(
+  'poll_votes',
+  {
+    ...$defaults,
+    pollId: integer('poll_id')
+      .notNull()
+      .references(() => polls.id, { onDelete: 'cascade' }),
+    optionId: integer('option_id')
+      .notNull()
+      .references(() => pollOptions.id, { onDelete: 'cascade' }),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+  },
+  (table) => [
+    uniqueIndex('poll_votes_poll_user_option_idx').on(table.pollId, table.userId, table.optionId),
+    index('poll_votes_poll_user_idx').on(table.pollId, table.userId),
+  ]
+);
+
+export const pollVotesRelations = relations(pollVotes, ({ one }) => ({
+  poll: one(polls, {
+    fields: [pollVotes.pollId],
+    references: [polls.id],
+  }),
+  option: one(pollOptions, {
+    fields: [pollVotes.optionId],
+    references: [pollOptions.id],
+  }),
+  user: one(users, {
+    fields: [pollVotes.userId],
     references: [users.id],
   }),
 }));
