@@ -69,6 +69,7 @@ export default function PollDialog({ open, onOpenChange, onCreated }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     const trimmedQuestion = question.trim();
     const trimmedOptions = options.map((o) => o.trim()).filter(Boolean);
 
