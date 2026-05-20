@@ -1,6 +1,6 @@
 import db from '../db/index.js';
 import { polls, pollOptions, pollVotes, topics, users } from '../db/schema.js';
-import { and, asc, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
 import { extractPollIds, stripPollDirectives } from '../utils/extractPollIds.js';
 
 /**
@@ -350,4 +350,59 @@ export async function cleanupExpiredDraftPolls() {
     .delete(polls)
     .where(and(isNull(polls.topicId), lt(polls.createdAt, threshold)));
   return result.rowCount ?? 0;
+}
+
+/**
+ * 列出当前用户的草稿（topicId IS NULL）
+ *
+ * @param {number} userId
+ * @param {{page?: number, limit?: number}} pagination
+ * @returns {Promise<{drafts: Array, total: number}>}
+ */
+export async function listDrafts(userId, { page = 1, limit = 20 } = {}) {
+  const safeLimit = Math.min(Math.max(1, limit), 100);
+  const offset = (Math.max(1, page) - 1) * safeLimit;
+
+  const drafts = await db
+    .select({
+      id: polls.id,
+      question: polls.question,
+      selectionType: polls.selectionType,
+      maxChoices: polls.maxChoices,
+      isAnonymous: polls.isAnonymous,
+      closedAt: polls.closedAt,
+      createdAt: polls.createdAt,
+      optionsCount: sql`(SELECT COUNT(*)::int FROM ${pollOptions} WHERE ${pollOptions.pollId} = ${polls.id})`.as('options_count'),
+    })
+    .from(polls)
+    .where(and(eq(polls.userId, userId), isNull(polls.topicId)))
+    .orderBy(desc(polls.createdAt))
+    .limit(safeLimit)
+    .offset(offset);
+
+  const [{ count }] = await db
+    .select({ count: sql`count(*)::int` })
+    .from(polls)
+    .where(and(eq(polls.userId, userId), isNull(polls.topicId)));
+
+  return { drafts, total: count };
+}
+
+/**
+ * 列出某话题已绑的所有 polls（含完整 options/voteCount，不含 myVotedOptionIds）
+ *
+ * @param {number} topicId
+ * @returns {Promise<{polls: Array}>}
+ */
+export async function listByTopic(topicId) {
+  const rows = await db
+    .select({ id: polls.id })
+    .from(polls)
+    .where(eq(polls.topicId, topicId))
+    .orderBy(asc(polls.createdAt));
+
+  // 复用 getPoll 拼装详情（不传 userId → myVotedOptionIds 为空）
+  const detailed = await Promise.all(rows.map((r) => getPoll(r.id, null)));
+  // getPoll 在 topic 软删时返回 null；此处 topic 应存在但并发删除时过滤
+  return { polls: detailed.filter(Boolean) };
 }
