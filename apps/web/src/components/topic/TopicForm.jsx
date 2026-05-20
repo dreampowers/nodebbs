@@ -100,6 +100,7 @@ export default function TopicForm({
               className={errors.content ? 'border-destructive' : ''}
               toolbar={TOPIC_TOOLBAR}
               uploadType="topics"
+              topicId={isEditMode ? initialData?.id : undefined}
             />
 
             {errors.content && (

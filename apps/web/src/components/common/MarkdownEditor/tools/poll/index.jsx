@@ -5,7 +5,7 @@ import { BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PollDialog from '@/components/topic/PollDialog';
 
-export function PollTool({ editor, disabled }) {
+export function PollTool({ editor, disabled, config }) {
   const [open, setOpen] = useState(false);
 
   const handleCreated = (pollId) => {
@@ -25,7 +25,12 @@ export function PollTool({ editor, disabled }) {
       >
         <BarChart3 className="h-4 w-4" />
       </Button>
-      <PollDialog open={open} onOpenChange={setOpen} onCreated={handleCreated} />
+      <PollDialog
+        open={open}
+        onOpenChange={setOpen}
+        onCreated={handleCreated}
+        topicId={config?.topicId}
+      />
     </>
   );
 }

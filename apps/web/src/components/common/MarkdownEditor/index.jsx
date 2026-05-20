@@ -40,6 +40,7 @@ export default function MarkdownEditor({
   minimal = false,
   onUpload,
   uploadType = 'topics',
+  topicId,
   ...props
 }) {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -87,12 +88,13 @@ export default function MarkdownEditor({
                   key={item}
                   editor={editorCore}
                   disabled={isPreviewMode || disabled}
-                  config={{ 
+                  config={{
                     // 传递给工具的全局配置
-                    onUpload, 
+                    onUpload,
                     uploadType,
                     textareaRef,
-                    onChange 
+                    onChange,
+                    topicId,
                   }}
                 />
               );
