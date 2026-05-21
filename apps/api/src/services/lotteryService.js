@@ -421,10 +421,20 @@ export async function drawLottery(lotteryId, ledger, { triggerSource = 'user-ear
     return { success: true, alreadyDrawn: true };
   }
 
-  // 2. 发放积分（幂等：ref 唯一索引兜底）
+  // 2. 发放积分（幂等：refId 与 triggerSource 无关，重试时同一个 lottery+winner 永远命中已有 ref）
   if (row.pointsPerWinner > 0 && preparedWinnerIds.length > 0) {
     for (const winnerUserId of preparedWinnerIds) {
-      const refId = `lottery_${lotteryId}_grant_${winnerUserId}_${triggerSource}`;
+      const refId = `lottery_${lotteryId}_grant_${winnerUserId}`;
+      // 已发过 → 跳过
+      const existing = await db
+        .select({ id: lotteryLedgerRefs.id })
+        .from(lotteryLedgerRefs)
+        .where(and(
+          eq(lotteryLedgerRefs.referenceType, 'grant'),
+          eq(lotteryLedgerRefs.referenceId, refId),
+        ))
+        .limit(1);
+      if (existing.length > 0) continue;
       try {
         await ledger.grant({
           userId: winnerUserId,
@@ -449,30 +459,40 @@ export async function drawLottery(lotteryId, ledger, { triggerSource = 'user-ear
     }
   }
 
-  // 3. 退还差额给创建者
+  // 3. 退还差额给创建者（同样幂等）
   const refundAmount = (row.winnersCount - actualWinnersCount) * row.pointsPerWinner;
   if (refundAmount > 0) {
-    const refundRefId = `lottery_${lotteryId}_refund_${triggerSource}`;
-    try {
-      await ledger.grant({
-        userId: row.userId,
-        amount: refundAmount,
-        currencyCode: DEFAULT_CURRENCY_CODE,
-        type: 'lottery_refund',
-        referenceType: 'lottery',
-        referenceId: refundRefId,
-        description: '抽奖未中名额退还',
-        metadata: { lotteryId, triggerSource },
-      });
-      await db.insert(lotteryLedgerRefs).values({
-        lotteryId,
-        referenceType: 'refund',
-        referenceId: refundRefId,
-        userId: row.userId,
-        amount: refundAmount,
-      }).onConflictDoNothing();
-    } catch (e) {
-      console.error(`[lottery ${lotteryId}] refund failed:`, e?.message || e);
+    const refundRefId = `lottery_${lotteryId}_refund_draw`;
+    const existing = await db
+      .select({ id: lotteryLedgerRefs.id })
+      .from(lotteryLedgerRefs)
+      .where(and(
+        eq(lotteryLedgerRefs.referenceType, 'refund'),
+        eq(lotteryLedgerRefs.referenceId, refundRefId),
+      ))
+      .limit(1);
+    if (existing.length === 0) {
+      try {
+        await ledger.grant({
+          userId: row.userId,
+          amount: refundAmount,
+          currencyCode: DEFAULT_CURRENCY_CODE,
+          type: 'lottery_refund',
+          referenceType: 'lottery',
+          referenceId: refundRefId,
+          description: '抽奖未中名额退还',
+          metadata: { lotteryId, triggerSource },
+        });
+        await db.insert(lotteryLedgerRefs).values({
+          lotteryId,
+          referenceType: 'refund',
+          referenceId: refundRefId,
+          userId: row.userId,
+          amount: refundAmount,
+        }).onConflictDoNothing();
+      } catch (e) {
+        console.error(`[lottery ${lotteryId}] refund failed:`, e?.message || e);
+      }
     }
   }
 
@@ -577,8 +597,9 @@ export async function updateDraftLottery(lotteryId, data, userId, ledger) {
     });
     return { success: true };
   } catch (e) {
-    // 反向补偿
+    // 反向补偿：把已经走完的 ledger 调用反向回滚
     if (extraRefId) {
+      // 之前 deduct 过 delta，现在补 grant 回去
       try {
         await ledger.grant({
           userId,
@@ -592,6 +613,23 @@ export async function updateDraftLottery(lotteryId, data, userId, ledger) {
         });
       } catch (rb) {
         console.error('[lottery] edit rollback refund failed:', rb);
+      }
+    } else if (refundRefId) {
+      // 之前 grant 过 -delta 给创建者，现在反向 deduct 回去
+      try {
+        await ledger.deduct({
+          userId,
+          amount: -delta,
+          currencyCode: DEFAULT_CURRENCY_CODE,
+          type: 'lottery_freeze',
+          referenceType: 'lottery',
+          referenceId: `${refundRefId}_rollback`,
+          description: '抽奖编辑回滚再冻结',
+          metadata: { lotteryId, phase: 'edit-rollback' },
+          allowNegative: true,
+        });
+      } catch (rb) {
+        console.error('[lottery] edit rollback re-deduct failed:', rb);
       }
     }
     throw e;
