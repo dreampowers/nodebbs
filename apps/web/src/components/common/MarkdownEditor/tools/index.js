@@ -5,6 +5,7 @@ import { ImageTool } from './image';
 import { EmojiTool } from './emoji';
 import { ProtectedTool } from './protected';
 import { PollTool } from './poll';
+import { LotteryTool } from './lottery';
 
 // 工具注册表
 export const ToolRegistry = {
@@ -30,4 +31,5 @@ export const ToolRegistry = {
   emoji: EmojiTool,
   protected: ProtectedTool,
   poll: PollTool,
+  lottery: LotteryTool,
 };

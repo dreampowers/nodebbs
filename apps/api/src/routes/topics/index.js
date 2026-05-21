@@ -23,6 +23,7 @@ import { createPaginator } from '../../utils/pagination.js';
 import { userEnricher } from '../../services/user/index.js';
 import { shouldHideUserInfo } from '../../utils/visibility.js';
 import { bindPollsToTopic } from '../../services/pollService.js';
+import { bindLotteriesToTopic } from '../../services/lotteryService.js';
 
 // :::protected{attrs}\n...\n::: 块（行首 ::: 结束）
 // 捕获组：1=attrs，2=content（由详情处理器消费；列表摘要处理仅使用整体匹配）
@@ -961,7 +962,8 @@ export default async function topicRoutes(fastify, options) {
         .returning();
 
       // 绑定正文里的 ::poll{id} 到本话题，剥离非法/盗用引用
-      const cleanContent = await bindPollsToTopic(newTopic.id, content, request.user.id);
+      const afterPolls = await bindPollsToTopic(newTopic.id, content, request.user.id);
+      const cleanContent = await bindLotteriesToTopic(newTopic.id, afterPolls, request.user.id);
 
       // 创建首贴
       const [firstPost] = await db
@@ -1173,10 +1175,11 @@ export default async function topicRoutes(fastify, options) {
           .limit(1);
 
         if (firstPost) {
-          // 绑定正文里的 ::poll{id} 到本话题，剥离非法/盗用引用。
+          // 绑定正文里的 ::poll{id} / ::lottery{id} 到本话题，剥离非法/盗用引用。
           // 使用 topic.userId（话题作者）作为所有权基准，
-          // 避免 admin/版主编辑别人话题时"无声"剥离原作者的投票
-          const cleanContent = await bindPollsToTopic(id, content, topic.userId);
+          // 避免 admin/版主编辑别人话题时"无声"剥离原作者的投票/抽奖
+          const afterPolls = await bindPollsToTopic(id, content, topic.userId);
+          const cleanContent = await bindLotteriesToTopic(id, afterPolls, topic.userId);
 
           const postUpdates = {
             content: cleanContent,

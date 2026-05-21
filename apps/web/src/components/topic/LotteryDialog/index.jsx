@@ -8,24 +8,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import PollFormTab from './PollFormTab';
+import LotteryFormTab from './LotteryFormTab';
 import DraftsTab from './DraftsTab';
 import BoundTab from './BoundTab';
 
 /**
- * 投票创建/编辑/复用对话框
- * Tab 式布局：
- *  - "新建"：编辑/创建表单（editingDraft 决定走 POST 还是 PUT）
- *  - "草稿"：当前用户的草稿列表，可插入/编辑/删除
- *  - "本话题已有"（仅 topicId 存在时）：当前话题已绑 polls，仅"重新插入"
- *
- * @param {object} props
- * @param {boolean} props.open
- * @param {(open:boolean)=>void} props.onOpenChange
- * @param {(pollId:number)=>void} props.onCreated - 插入到编辑器的回调
- * @param {number|undefined} props.topicId - 仅编辑现有话题时传入
+ * 抽奖创建/编辑/复用对话框
+ * Tab 式布局，与 PollDialog 同结构。
  */
-export default function PollDialog({ open, onOpenChange, onCreated, topicId }) {
+export default function LotteryDialog({ open, onOpenChange, onCreated, topicId }) {
   const [activeTab, setActiveTab] = useState('new');
   const [editingDraft, setEditingDraft] = useState(null);
   const [draftsRefreshKey, setDraftsRefreshKey] = useState(0);
@@ -43,12 +34,12 @@ export default function PollDialog({ open, onOpenChange, onCreated, topicId }) {
     }
   }, [open]);
 
-  const handleFormSubmitted = (pollId, wasEditing) => {
+  const handleFormSubmitted = (lotteryId, wasEditing) => {
     if (wasEditing) {
       setEditingDraft(null);
       setDraftsRefreshKey((k) => k + 1);
     } else {
-      onCreated?.(pollId);
+      onCreated?.(lotteryId);
       handleOpenChange(false);
     }
   };
@@ -58,17 +49,17 @@ export default function PollDialog({ open, onOpenChange, onCreated, topicId }) {
     setActiveTab('new');
   };
 
-  const handleInsert = (pollId) => {
-    onCreated?.(pollId);
+  const handleInsert = (lotteryId) => {
+    onCreated?.(lotteryId);
     handleOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {editingDraft ? `编辑草稿 #${editingDraft.id}` : '插入投票'}
+            {editingDraft ? `编辑草稿 #${editingDraft.id}` : '插入抽奖'}
           </DialogTitle>
         </DialogHeader>
 
@@ -80,7 +71,7 @@ export default function PollDialog({ open, onOpenChange, onCreated, topicId }) {
           </TabsList>
 
           <TabsContent value="new">
-            <PollFormTab
+            <LotteryFormTab
               editingDraft={editingDraft}
               onSubmitted={handleFormSubmitted}
               onCancelEdit={() => setEditingDraft(null)}

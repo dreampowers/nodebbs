@@ -58,6 +58,7 @@ export const MODULE_SPECIAL_ACTIONS = {
     { value: 'extensions', label: '扩展功能' },
     { value: 'ads', label: '广告管理' },
     { value: 'settings', label: '系统配置' },
+    { value: 'lotteries', label: '抽奖管理' },
   ],
 };
 
@@ -228,6 +229,22 @@ export const SYSTEM_PERMISSIONS = [
     name: '删除投票',
     module: 'topic',
     action: 'poll.delete',
+    isSystem: true,
+    conditions: [],
+  },
+  {
+    slug: 'topic.lottery.create',
+    name: '创建抽奖',
+    module: 'topic',
+    action: 'lottery.create',
+    isSystem: true,
+    conditions: [],
+  },
+  {
+    slug: 'topic.lottery.delete',
+    name: '删除抽奖',
+    module: 'topic',
+    action: 'lottery.delete',
     isSystem: true,
     conditions: [],
   },
@@ -486,6 +503,14 @@ export const SYSTEM_PERMISSIONS = [
     conditions: [],
   },
   {
+    slug: 'dashboard.lotteries',
+    name: '后台管理抽奖',
+    module: 'dashboard',
+    action: 'lotteries',
+    isSystem: true,
+    conditions: [],
+  },
+  {
     slug: 'dashboard.settings',
     name: '系统配置',
     module: 'dashboard',
@@ -565,6 +590,7 @@ export const ROLE_PERMISSION_MAP = {
     // 话题：创建、查看、编辑/删除自己的
     'topic.create', 'topic.read', 'topic.update', 'topic.delete',
     'topic.poll.create', 'topic.poll.delete',
+    'topic.lottery.create', 'topic.lottery.delete',
     // 回复：创建、查看、编辑/删除自己的
     'post.create', 'post.read', 'post.update', 'post.delete',
     // 用户：查看、编辑、注销自己的资料

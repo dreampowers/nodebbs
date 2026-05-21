@@ -128,12 +128,18 @@ export default function PollWidget({ pollId }) {
 
   if (loading) {
     return (
-      <div className="my-4 p-4 card-base animate-pulse">
-        <div className="h-5 bg-muted rounded w-1/3 mb-3"></div>
-        <div className="space-y-2">
-          <div className="h-10 bg-muted rounded"></div>
-          <div className="h-10 bg-muted rounded"></div>
-          <div className="h-10 bg-muted rounded"></div>
+      <div className="not-prose my-5 relative rounded-2xl px-5 py-5 bg-linear-to-br from-sky-400/10 via-sky-400/3 to-transparent animate-pulse">
+        <div className="flex items-start gap-3">
+          <div className="h-11 w-11 rounded-full bg-sky-400/15"></div>
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-muted rounded w-1/2"></div>
+            <div className="h-3 bg-muted rounded w-1/3"></div>
+          </div>
+        </div>
+        <div className="mt-5 space-y-2">
+          <div className="h-10 bg-muted rounded-lg"></div>
+          <div className="h-10 bg-muted rounded-lg"></div>
+          <div className="h-10 bg-muted rounded-lg"></div>
         </div>
       </div>
     );
@@ -141,7 +147,7 @@ export default function PollWidget({ pollId }) {
 
   if (notFound) {
     return (
-      <div className="my-4 p-3 border border-muted rounded-lg bg-muted/30 text-muted-foreground text-sm flex items-center gap-2">
+      <div className="not-prose my-5 px-4 py-3 rounded-2xl bg-muted/40 text-muted-foreground text-sm flex items-center gap-2">
         <BarChart3 className="h-4 w-4" />
         该投票已被删除
       </div>
@@ -150,7 +156,7 @@ export default function PollWidget({ pollId }) {
 
   if (error) {
     return (
-      <div className="my-4 p-4 border border-destructive/30 rounded-lg bg-destructive/5 text-destructive text-sm">
+      <div className="not-prose my-5 px-4 py-3 rounded-2xl bg-destructive/5 text-destructive text-sm">
         投票加载失败：{error}
       </div>
     );
@@ -200,55 +206,68 @@ export default function PollWidget({ pollId }) {
   };
 
   return (
-    <div className="my-4 p-4 card-base">
-      {/* 标题行 */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="font-medium text-foreground flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-primary" />
-          <span>{poll.question}</span>
+    <div className="not-prose my-5 relative rounded-2xl px-5 py-5 bg-linear-to-br from-sky-400/10 via-sky-400/5 to-sky-400/10">
+      {/* 头部：徽章 + 标题 + 状态 */}
+      <div className="flex items-center gap-3">
+        <div className="shrink-0 h-11 w-11 rounded-full bg-sky-400/15 flex items-center justify-center ring-1 ring-sky-400/20">
+          <BarChart3 className="h-5 w-5 text-sky-600 dark:text-sky-400" />
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {poll.isAnonymous && (
-            <span className="inline-flex items-center gap-1">
-              <Lock className="h-3 w-3" /> 匿名
-            </span>
-          )}
-          {isClosed && (
-            <span className="inline-flex items-center gap-1">
-              <Lock className="h-3 w-3" /> 已结束
-            </span>
-          )}
+        <div className="flex-1 min-w-0 flex items-center justify-between gap-3">
+          <h3 className="text-base font-semibold text-foreground leading-tight truncate">
+            {poll.question}
+          </h3>
+          <div className="shrink-0 flex items-center gap-2 text-xs text-muted-foreground">
+            {poll.isAnonymous && (
+              <span className="inline-flex items-center gap-1">
+                <Lock className="h-3 w-3" /> 匿名
+              </span>
+            )}
+            {isClosed && (
+              <span className="inline-flex items-center gap-1">
+                <Lock className="h-3 w-3" /> 已结束
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* 分隔渐变线 */}
+      <div className="h-px my-4 bg-linear-to-r from-sky-400/30 via-sky-400/10 to-transparent" />
+
       {/* 选项区 */}
       <div className="space-y-2 mb-3">
-        {poll.options.map((opt) => {
+        {poll.options.map((opt, index) => {
           const myVoted = poll.myVotedOptionIds?.includes(opt.id);
           const checked = selectedIds.includes(opt.id);
           const percent = poll.totalVoters > 0
             ? Math.round((opt.voteCount / Math.max(poll.totalVoters, 1)) * 100)
             : 0;
           const barWidth = maxVotes > 0 ? Math.round((opt.voteCount / maxVotes) * 100) : 0;
+          // 选项色：cycle --chart-1..5；选项条用 element opacity（避免 color-mix）
+          const chartColor = `var(--chart-${(index % 5) + 1})`;
 
           if (showResults) {
             return (
-              <div key={opt.id} className="relative border border-border rounded-lg p-3 overflow-hidden">
+              <div key={opt.id} className="relative rounded-lg p-3 overflow-hidden bg-muted/30">
                 <div
-                  className={`absolute inset-y-0 left-0 transition-all ${myVoted ? 'bg-primary/15' : 'bg-muted'}`}
-                  style={{ width: `${barWidth}%` }}
+                  className="absolute inset-y-0 left-0 transition-all opacity-20"
+                  style={{ width: `${barWidth}%`, backgroundColor: chartColor }}
                 />
                 <div className="relative flex items-center justify-between text-sm">
                   <span className="flex items-center gap-2">
-                    {myVoted && <CheckCircle2 className="h-4 w-4 text-primary" />}
-                    <span>{opt.text}</span>
+                    <span
+                      className="h-2.5 w-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: chartColor }}
+                    />
+                    {myVoted && <CheckCircle2 className="h-4 w-4 text-sky-600 dark:text-sky-400" />}
+                    <span className={myVoted ? 'font-medium' : ''}>{opt.text}</span>
                   </span>
                   <span className="flex items-center gap-3 text-muted-foreground tabular-nums">
                     <span>{opt.voteCount} 票 · {percent}%</span>
                     {!poll.isAnonymous && opt.voteCount > 0 && (
                       <button
                         type="button"
-                        className="relative z-10 text-xs underline hover:text-foreground"
+                        className="relative z-10 text-xs underline-offset-2 hover:underline hover:text-foreground"
                         onClick={() => setVotersDialog({ optionId: opt.id, optionText: opt.text })}
                       >
                         查看 {opt.voteCount} 人
@@ -263,9 +282,11 @@ export default function PollWidget({ pollId }) {
           return (
             <label
               key={opt.id}
-              className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                checked ? "border-primary bg-primary/5" : "border-border hover:bg-accent/50"
-              } ${!isLoggedIn ? "cursor-not-allowed opacity-70" : ""}`}
+              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                checked
+                  ? 'bg-sky-400/10 ring-1 ring-sky-400/30'
+                  : 'bg-muted/30 hover:bg-muted/60'
+              } ${!isLoggedIn ? 'cursor-not-allowed opacity-70' : ''}`}
             >
               <input
                 type={poll.selectionType === 'single' ? 'radio' : 'checkbox'}
@@ -274,6 +295,10 @@ export default function PollWidget({ pollId }) {
                 checked={checked}
                 onChange={() => toggleOption(opt.id)}
                 className="h-4 w-4"
+              />
+              <span
+                className="h-2.5 w-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: chartColor }}
               />
               <span className="flex-1">{opt.text}</span>
             </label>

@@ -18,6 +18,9 @@ export const TRANSACTION_TYPES = {
   GIFT_SENT: 'gift_sent',
   SHOP_PURCHASE: 'shop_purchase',
   GENERATE_INVITATION: 'generate_invitation',
+  LOTTERY_FREEZE: 'lottery_freeze',
+  LOTTERY_GRANT: 'lottery_grant',
+  LOTTERY_REFUND: 'lottery_refund',
 };
 
 export const TRANSACTION_TYPE_LABELS = {
@@ -36,6 +39,9 @@ export const TRANSACTION_TYPE_LABELS = {
   [TRANSACTION_TYPES.GIFT_SENT]: '赠送商品',
   [TRANSACTION_TYPES.SHOP_PURCHASE]: '购买商品',
   [TRANSACTION_TYPES.GENERATE_INVITATION]: '生成邀请码',
+  [TRANSACTION_TYPES.LOTTERY_FREEZE]: '抽奖冻结',
+  [TRANSACTION_TYPES.LOTTERY_GRANT]: '抽奖中奖',
+  [TRANSACTION_TYPES.LOTTERY_REFUND]: '抽奖退还',
 };
 
 export const TRANSACTION_TYPE_COLORS = {
@@ -54,6 +60,9 @@ export const TRANSACTION_TYPE_COLORS = {
   [TRANSACTION_TYPES.GIFT_SENT]: 'destructive',
   [TRANSACTION_TYPES.SHOP_PURCHASE]: 'destructive',
   [TRANSACTION_TYPES.GENERATE_INVITATION]: 'destructive',
+  [TRANSACTION_TYPES.LOTTERY_FREEZE]: 'destructive',
+  [TRANSACTION_TYPES.LOTTERY_GRANT]: 'default',
+  [TRANSACTION_TYPES.LOTTERY_REFUND]: 'default',
 };
 
 /**

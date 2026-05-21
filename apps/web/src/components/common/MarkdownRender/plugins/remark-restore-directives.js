@@ -1,7 +1,7 @@
 import { visit } from 'unist-util-visit';
 
 // 允许的 directive 名称白名单
-const ALLOWED_DIRECTIVES = ['video', 'audio', 'sticker', 'poll', 'emoji', 'protected', 'protected-hidden'];
+const ALLOWED_DIRECTIVES = ['video', 'audio', 'sticker', 'poll', 'lottery', 'emoji', 'protected', 'protected-hidden'];
 
 /**
  * 这个插件用于还原非预期的 directive 节点为原始文本

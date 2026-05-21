@@ -25,7 +25,7 @@ const TOPIC_TOOLBAR = [
   '|',
   'horizontalRule',
   '|',
-  'link', 'image', 'video', 'audio', 'table', 'protected', 'poll', 'emoji'
+  'link', 'image', 'video', 'audio', 'table', 'protected', 'poll', 'lottery', 'emoji'
 ];
 
 /**

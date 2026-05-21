@@ -1092,6 +1092,88 @@ export const pollVotesRelations = relations(pollVotes, ({ one }) => ({
   }),
 }));
 
+// ============ Lotteries (话题抽奖) ============
+export const lotteries = pgTable(
+  'lotteries',
+  {
+    ...$defaults,
+    topicId: integer('topic_id').references(() => topics.id, { onDelete: 'cascade' }), // NULL = 草稿
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    description: text('description'),
+    winnersCount: integer('winners_count').notNull(),
+    pointsPerWinner: integer('points_per_winner').notNull().default(0),
+    prizeDescription: text('prize_description'),
+    minAccountDays: integer('min_account_days').notNull().default(0),
+    requireReply: boolean('require_reply').notNull().default(false),
+    drawAt: timestamp('draw_at', { withTimezone: true }).notNull(),
+    drawnAt: timestamp('drawn_at', { withTimezone: true }),
+    status: varchar('status', { length: 20 }).notNull().default('pending'), // 'pending' | 'drawn' | 'cancelled'
+    participantsCount: integer('participants_count').notNull().default(0),
+    frozenPoints: integer('frozen_points').notNull().default(0),
+  },
+  (table) => [
+    index('lotteries_topic_idx').on(table.topicId),
+    index('lotteries_user_idx').on(table.userId),
+    index('lotteries_status_drawat_idx').on(table.status, table.drawAt),
+  ]
+);
+
+export const lotteryParticipants = pgTable(
+  'lottery_participants',
+  {
+    ...$defaults,
+    lotteryId: integer('lottery_id')
+      .notNull()
+      .references(() => lotteries.id, { onDelete: 'cascade' }),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    isWinner: boolean('is_winner').notNull().default(false),
+  },
+  (table) => [
+    uniqueIndex('lottery_participants_lottery_user_idx').on(table.lotteryId, table.userId),
+    index('lottery_participants_winner_idx').on(table.lotteryId, table.isWinner),
+  ]
+);
+
+export const lotteryLedgerRefs = pgTable(
+  'lottery_ledger_refs',
+  {
+    ...$defaults,
+    lotteryId: integer('lottery_id')
+      .notNull()
+      .references(() => lotteries.id, { onDelete: 'cascade' }),
+    referenceType: varchar('reference_type', { length: 20 }).notNull(), // 'freeze' | 'grant' | 'refund'
+    referenceId: varchar('reference_id', { length: 100 }).notNull(),
+    userId: integer('user_id').notNull().references(() => users.id),
+    amount: integer('amount').notNull(),
+  },
+  (table) => [
+    uniqueIndex('lottery_ledger_refs_type_ref_idx').on(table.referenceType, table.referenceId),
+    index('lottery_ledger_refs_lottery_idx').on(table.lotteryId),
+  ]
+);
+
+export const lotteriesRelations = relations(lotteries, ({ one, many }) => ({
+  topic: one(topics, { fields: [lotteries.topicId], references: [topics.id] }),
+  user: one(users, { fields: [lotteries.userId], references: [users.id] }),
+  participants: many(lotteryParticipants),
+  ledgerRefs: many(lotteryLedgerRefs),
+}));
+
+export const lotteryParticipantsRelations = relations(lotteryParticipants, ({ one }) => ({
+  lottery: one(lotteries, { fields: [lotteryParticipants.lotteryId], references: [lotteries.id] }),
+  user: one(users, { fields: [lotteryParticipants.userId], references: [users.id] }),
+}));
+
+export const lotteryLedgerRefsRelations = relations(lotteryLedgerRefs, ({ one }) => ({
+  lottery: one(lotteries, { fields: [lotteryLedgerRefs.lotteryId], references: [lotteries.id] }),
+  user: one(users, { fields: [lotteryLedgerRefs.userId], references: [users.id] }),
+}));
+
 // ============ Credit System (积分系统) ============
 export * from '../extensions/rewards/schema.js';
 export * from '../extensions/shop/schema.js';
