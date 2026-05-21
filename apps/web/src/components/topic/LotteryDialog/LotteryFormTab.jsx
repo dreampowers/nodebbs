@@ -37,7 +37,9 @@ export default function LotteryFormTab({ editingDraft, onSubmitted, onCancelEdit
   const [description, setDescription] = useState('');
   const [winnersCount, setWinnersCount] = useState('1');
   const [pointsPerWinner, setPointsPerWinner] = useState('0');
+  const [prizeMode, setPrizeMode] = useState('shared'); // 'shared' | 'per-winner'
   const [prizeDescription, setPrizeDescription] = useState('');
+  const [prizeItemsText, setPrizeItemsText] = useState('');
   const [minAccountDays, setMinAccountDays] = useState('0');
   const [requireReply, setRequireReply] = useState(false);
   const [drawAt, setDrawAt] = useState('');
@@ -52,7 +54,10 @@ export default function LotteryFormTab({ editingDraft, onSubmitted, onCancelEdit
       setDescription(editingDraft.description || '');
       setWinnersCount(String(editingDraft.winnersCount ?? 1));
       setPointsPerWinner(String(editingDraft.pointsPerWinner ?? 0));
+      const hasPrizeItems = Array.isArray(editingDraft.prizeItems) && editingDraft.prizeItems.length > 0;
+      setPrizeMode(hasPrizeItems ? 'per-winner' : 'shared');
       setPrizeDescription(editingDraft.prizeDescription || '');
+      setPrizeItemsText(hasPrizeItems ? editingDraft.prizeItems.join('\n') : '');
       setMinAccountDays(String(editingDraft.minAccountDays ?? 0));
       setRequireReply(!!editingDraft.requireReply);
       setDrawAt(toDatetimeLocalValue(editingDraft.drawAt));
@@ -61,7 +66,9 @@ export default function LotteryFormTab({ editingDraft, onSubmitted, onCancelEdit
       setDescription('');
       setWinnersCount('1');
       setPointsPerWinner('0');
+      setPrizeMode('shared');
       setPrizeDescription('');
+      setPrizeItemsText('');
       setMinAccountDays('0');
       setRequireReply(false);
       setDrawAt('');
@@ -128,12 +135,31 @@ export default function LotteryFormTab({ editingDraft, onSubmitted, onCancelEdit
       return;
     }
 
+    // 逐项奖品模式：拆行 → 过滤空行 → 校验数量
+    let prizeItemsPayload = null;
+    if (prizeMode === 'per-winner') {
+      const items = prizeItemsText
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (items.length !== winners) {
+        toast.error(`奖品项 ${items.length} 个，必须等于名额 ${winners} 个`);
+        return;
+      }
+      if (items.some((s) => s.length > 500)) {
+        toast.error('单个奖品项最长 500 字');
+        return;
+      }
+      prizeItemsPayload = items;
+    }
+
     const body = {
       title: trimmedTitle,
       description: description.trim() || null,
       winnersCount: winners,
       pointsPerWinner: points,
-      prizeDescription: prizeDescription.trim() || null,
+      prizeDescription: prizeMode === 'shared' ? (prizeDescription.trim() || null) : null,
+      prizeItems: prizeItemsPayload,
       minAccountDays: Number.parseInt(minAccountDays, 10) || 0,
       requireReply,
       drawAt: drawDate.toISOString(),
@@ -223,15 +249,47 @@ export default function LotteryFormTab({ editingDraft, onSubmitted, onCancelEdit
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="lot-prize">奖品描述（仅中奖者可见，可选）</Label>
-        <Textarea
-          id="lot-prize"
-          value={prizeDescription}
-          onChange={(e) => setPrizeDescription(e.target.value)}
-          placeholder="例：QQ 群号 1234567、兑换码 ABCD-EFGH"
-          maxLength={1000}
-          rows={2}
-        />
+        <Label>奖品（仅中奖者可见，可选）</Label>
+        <div className="flex gap-4 text-sm">
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <input
+              type="radio"
+              name="lot-prize-mode"
+              value="shared"
+              checked={prizeMode === 'shared'}
+              onChange={() => setPrizeMode('shared')}
+              className="h-4 w-4"
+            />
+            <span>共享一段描述</span>
+          </label>
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <input
+              type="radio"
+              name="lot-prize-mode"
+              value="per-winner"
+              checked={prizeMode === 'per-winner'}
+              onChange={() => setPrizeMode('per-winner')}
+              className="h-4 w-4"
+            />
+            <span>逐项分配（每人一项）</span>
+          </label>
+        </div>
+        {prizeMode === 'shared' ? (
+          <Textarea
+            id="lot-prize"
+            value={prizeDescription}
+            onChange={(e) => setPrizeDescription(e.target.value)}
+            placeholder="例：QQ 群号 1234567、兑换码 ABCD-EFGH"
+            maxLength={1000}
+            rows={2}
+          />
+        ) : (
+          <PrizeItemsInput
+            value={prizeItemsText}
+            onChange={setPrizeItemsText}
+            winnersCount={winners}
+          />
+        )}
       </div>
 
       <div className="space-y-2">
@@ -297,5 +355,26 @@ export default function LotteryFormTab({ editingDraft, onSubmitted, onCancelEdit
         </Button>
       </div>
     </form>
+  );
+}
+
+function PrizeItemsInput({ value, onChange, winnersCount }) {
+  const items = value.split('\n').map((s) => s.trim()).filter(Boolean);
+  const count = items.length;
+  const target = Number.isFinite(winnersCount) && winnersCount > 0 ? winnersCount : 0;
+  const matched = count === target;
+  return (
+    <div className="space-y-1">
+      <Textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={'每行一项，例如：\nQQ 群邀请码：ABC123\n兑换码：XYZ789'}
+        rows={5}
+      />
+      <div className={`text-xs ${matched ? 'text-muted-foreground' : 'text-destructive'}`}>
+        已填 {count} 项 / 名额 {target} 项
+        {!matched && count > 0 && '（必须相等）'}
+      </div>
+    </div>
   );
 }

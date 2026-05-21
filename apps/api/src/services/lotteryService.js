@@ -43,6 +43,7 @@ function validateLotteryData(data, { requireFutureDrawAt = true } = {}) {
     winnersCount,
     pointsPerWinner,
     prizeDescription,
+    prizeItems,
     minAccountDays,
     requireReply,
     drawAt,
@@ -82,17 +83,38 @@ function validateLotteryData(data, { requireFutureDrawAt = true } = {}) {
   if (requireFutureDrawAt && drawAtDate.getTime() <= Date.now()) {
     throw err('截止时间必须晚于当前时间', 400);
   }
+
+  // 逐项奖品池：可选；非空时与 prizeDescription 互斥
+  if (prizeItems != null) {
+    if (!Array.isArray(prizeItems)) {
+      throw err('prizeItems 必须是数组', 400);
+    }
+    if (prizeItems.length !== winnersCount) {
+      throw err(`奖品数量 (${prizeItems.length}) 必须等于中奖名额 (${winnersCount})`, 400);
+    }
+    if (prizeItems.some((s) => typeof s !== 'string' || !s.trim())) {
+      throw err('奖品项不能为空', 400);
+    }
+    if (prizeItems.some((s) => s.length > 500)) {
+      throw err('单个奖品项最长 500 字', 400);
+    }
+    if (prizeDescription) {
+      throw err('奖品池与奖品描述只能选一种', 400);
+    }
+  }
 }
 
 function buildPayload(data) {
+  const hasPrizeItems = Array.isArray(data.prizeItems) && data.prizeItems.length > 0;
   return {
     title: String(data.title).trim().slice(0, MAX_LOTTERY_TITLE),
     description: data.description ? String(data.description).slice(0, MAX_LOTTERY_DESC) : null,
     winnersCount: data.winnersCount,
     pointsPerWinner: data.pointsPerWinner,
-    prizeDescription: data.prizeDescription
-      ? String(data.prizeDescription).slice(0, MAX_PRIZE_DESC)
-      : null,
+    prizeDescription: hasPrizeItems
+      ? null
+      : (data.prizeDescription ? String(data.prizeDescription).slice(0, MAX_PRIZE_DESC) : null),
+    prizeItems: hasPrizeItems ? data.prizeItems.map((s) => String(s).slice(0, 500)) : null,
     minAccountDays: data.minAccountDays ?? 0,
     requireReply: !!data.requireReply,
     drawAt: data.drawAt instanceof Date ? data.drawAt : new Date(data.drawAt),
@@ -204,9 +226,13 @@ export async function getLottery(lotteryId, userId) {
 
   let myParticipated = false;
   let myIsWinner = false;
+  let myPrizeItem = null;
   if (userId) {
     const [p] = await db
-      .select({ isWinner: lotteryParticipants.isWinner })
+      .select({
+        isWinner: lotteryParticipants.isWinner,
+        prizeItem: lotteryParticipants.prizeItem,
+      })
       .from(lotteryParticipants)
       .where(and(
         eq(lotteryParticipants.lotteryId, lotteryId),
@@ -216,17 +242,21 @@ export async function getLottery(lotteryId, userId) {
     if (p) {
       myParticipated = true;
       myIsWinner = !!p.isWinner;
+      myPrizeItem = p.prizeItem ?? null;
     }
   }
 
+  const isCreator = userId && row.userId === userId;
+
   let winners = [];
   if (row.status === 'drawn') {
-    winners = await db
+    const winnerRows = await db
       .select({
         userId: users.id,
         username: users.username,
         name: users.name,
         avatar: users.avatar,
+        prizeItem: lotteryParticipants.prizeItem,
       })
       .from(lotteryParticipants)
       .innerJoin(users, eq(users.id, lotteryParticipants.userId))
@@ -235,6 +265,10 @@ export async function getLottery(lotteryId, userId) {
         eq(lotteryParticipants.isWinner, true),
       ))
       .orderBy(asc(lotteryParticipants.id));
+    // 仅 creator 看得到对照表里每人分到的奖品项
+    winners = winnerRows.map((w) =>
+      isCreator ? w : { userId: w.userId, username: w.username, name: w.name, avatar: w.avatar }
+    );
   }
 
   const participants = await db
@@ -249,7 +283,6 @@ export async function getLottery(lotteryId, userId) {
     .where(eq(lotteryParticipants.lotteryId, lotteryId))
     .orderBy(asc(lotteryParticipants.id));
 
-  const isCreator = userId && row.userId === userId;
   const canSeePrize = isCreator || (myParticipated && myIsWinner);
 
   return {
@@ -261,6 +294,8 @@ export async function getLottery(lotteryId, userId) {
     winnersCount: row.winnersCount,
     pointsPerWinner: row.pointsPerWinner,
     prizeDescription: canSeePrize ? row.prizeDescription : null,
+    prizeItems: isCreator ? (row.prizeItems ?? null) : null,
+    myPrizeItem,
     minAccountDays: row.minAccountDays,
     requireReply: row.requireReply,
     drawAt: row.drawAt,
@@ -409,6 +444,19 @@ export async function drawLottery(lotteryId, ledger, { triggerSource = 'user-ear
         .update(lotteryParticipants)
         .set({ isWinner: true })
         .where(inArray(lotteryParticipants.id, winnerIds));
+
+      // 逐项奖品分配（仅 prize_items 非空时）：洗牌奖品池后 1:1 写入
+      if (Array.isArray(locked.prizeItems) && locked.prizeItems.length > 0) {
+        const shuffledPrizes = shuffle(locked.prizeItems);
+        for (let i = 0; i < winners.length; i++) {
+          const prizeItem = shuffledPrizes[i];
+          if (prizeItem == null) continue;
+          await tx
+            .update(lotteryParticipants)
+            .set({ prizeItem })
+            .where(eq(lotteryParticipants.id, winners[i].id));
+        }
+      }
     }
 
     await tx

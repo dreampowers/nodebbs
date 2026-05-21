@@ -31,6 +31,11 @@ export default async function lotteryRoutes(fastify, options) {
             winnersCount: { type: 'integer', minimum: 1, maximum: 1000 },
             pointsPerWinner: { type: 'integer', minimum: 0 },
             prizeDescription: { type: ['string', 'null'], maxLength: 1000 },
+            prizeItems: {
+              type: ['array', 'null'],
+              maxItems: 1000,
+              items: { type: 'string', minLength: 1, maxLength: 500 },
+            },
             minAccountDays: { type: 'integer', minimum: 0, default: 0 },
             requireReply: { type: 'boolean', default: false },
             drawAt: { type: 'string', format: 'date-time' },
@@ -288,6 +293,11 @@ export default async function lotteryRoutes(fastify, options) {
             winnersCount: { type: 'integer', minimum: 1, maximum: 1000 },
             pointsPerWinner: { type: 'integer', minimum: 0 },
             prizeDescription: { type: ['string', 'null'], maxLength: 1000 },
+            prizeItems: {
+              type: ['array', 'null'],
+              maxItems: 1000,
+              items: { type: 'string', minLength: 1, maxLength: 500 },
+            },
             minAccountDays: { type: 'integer', minimum: 0, default: 0 },
             requireReply: { type: 'boolean', default: false },
             drawAt: { type: 'string', format: 'date-time' },

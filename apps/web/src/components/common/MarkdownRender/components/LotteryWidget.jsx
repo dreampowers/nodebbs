@@ -308,17 +308,36 @@ export default function LotteryWidget({ lotteryId }) {
           ) : (
             <div className="text-xs text-muted-foreground">无人参与</div>
           )}
-          {data.myIsWinner && data.prizeDescription && (
+          {data.myIsWinner && (data.myPrizeItem || data.prizeDescription) && (
             <div className="mt-3 p-3 rounded-lg bg-background/70 text-sm whitespace-pre-line">
               <div className="text-xs text-amber-700 dark:text-amber-400 font-medium mb-1">
                 你的奖品
               </div>
-              {data.prizeDescription}
+              {data.myPrizeItem || data.prizeDescription}
             </div>
           )}
           {data.myIsWinner && data.pointsPerWinner > 0 && (
             <div className="mt-2 text-xs text-amber-700 dark:text-amber-400">
               {data.pointsPerWinner} 积分已发放到你的账户
+            </div>
+          )}
+          {/* creator 视图：奖品分配对照表 */}
+          {isOwner && Array.isArray(data.prizeItems) && data.prizeItems.length > 0 && (
+            <div className="mt-3 p-3 rounded-lg bg-background/70 text-xs">
+              <div className="text-amber-700 dark:text-amber-400 font-medium mb-1.5">
+                奖品分配（仅你可见）
+              </div>
+              <div className="space-y-1">
+                {data.winners?.map((w) => (
+                  <div key={w.userId} className="flex items-baseline gap-2">
+                    <span className="font-medium text-foreground shrink-0">
+                      {w.name || w.username}
+                    </span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="break-all whitespace-pre-line">{w.prizeItem ?? '—'}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

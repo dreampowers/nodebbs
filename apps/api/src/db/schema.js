@@ -8,6 +8,7 @@ import {
   unique,
   uniqueIndex,
   integer,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { $createdAt, $defaults } from './columns.js';
@@ -1106,6 +1107,7 @@ export const lotteries = pgTable(
     winnersCount: integer('winners_count').notNull(),
     pointsPerWinner: integer('points_per_winner').notNull().default(0),
     prizeDescription: text('prize_description'),
+    prizeItems: jsonb('prize_items'), // 逐项奖品池：string[] | null；非空时跟 prizeDescription 互斥
     minAccountDays: integer('min_account_days').notNull().default(0),
     requireReply: boolean('require_reply').notNull().default(false),
     drawAt: timestamp('draw_at', { withTimezone: true }).notNull(),
@@ -1132,6 +1134,7 @@ export const lotteryParticipants = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     isWinner: boolean('is_winner').notNull().default(false),
+    prizeItem: text('prize_item'), // 逐项模式下分到的奖品项；未中奖或共享模式为 NULL
   },
   (table) => [
     uniqueIndex('lottery_participants_lottery_user_idx').on(table.lotteryId, table.userId),
