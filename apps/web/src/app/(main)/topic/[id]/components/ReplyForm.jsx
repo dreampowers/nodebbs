@@ -43,6 +43,7 @@ export default function ReplyForm({
   if (!isAuthenticated) {
     return (
       <div className='mt-4 sm:mt-6 content-card p-6 text-center'>
+        <div id='topic-reply-form' className='relative -top-16' />
         <p className='text-muted-foreground mb-4'>请先登录后再发表评论</p>
         <Button onClick={openLoginDialog}>登录</Button>
       </div>
@@ -58,6 +59,7 @@ export default function ReplyForm({
 
   return (
     <div className='mt-4 sm:mt-6'>
+      <div id='topic-reply-form' className='relative -top-16' />
       {/* 话题已关闭提示 */}
       {!isDeleted && isClosed && (
         <div className='mb-4 bg-muted border border-border rounded-lg p-4 flex items-center space-x-3'>
