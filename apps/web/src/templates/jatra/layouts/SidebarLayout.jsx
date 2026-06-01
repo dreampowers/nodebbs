@@ -27,13 +27,13 @@ export default async function SidebarLayout({ children, rightSidebar }) {
   return (
     <div className='flex flex-col gap-6'>
       <AdSlot slotCode='home_header_banner' className='rounded-lg' />
-      <div className='flex gap-8 items-start'>
+      <div className='flex gap-6 items-start'>
         <main className='flex-1 min-w-0 flex flex-col gap-6'>
           {children}
         </main>
 
         {sidebarContent && (
-          <aside className='hidden lg:flex flex-col w-70 shrink-0 sticky top-[var(--header-offset)] gap-4'>
+          <aside className='hidden lg:flex flex-col w-64 shrink-0 sticky top-[var(--header-offset)] gap-4'>
             <AdSlot slotCode='home_sidebar_top' />
             {sidebarContent}
             <AdSlot slotCode='home_sidebar_bottom' />

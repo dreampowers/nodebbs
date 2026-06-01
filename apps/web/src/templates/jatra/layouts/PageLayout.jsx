@@ -12,7 +12,7 @@ export default async function PageLayout({ children }) {
   return (
     <>
       {/* 三栏容器：左侧导航始终显示，右侧由 children 自行决定 */}
-      <div className='container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl flex gap-8 items-start pt-6 pb-12'>
+      <div className='container mx-auto px-4 sm:px-6 lg:px-8 flex gap-6 items-start pt-6 pb-12'>
         <DesktopNavAside categories={categories} />
 
         <div className='flex-1 min-w-0'>

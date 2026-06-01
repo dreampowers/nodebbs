@@ -1,26 +1,33 @@
+'use client';
+
+import { useSettings } from '@/contexts/SettingsContext';
 import SidebarFooter from './SidebarFooter';
 
 /**
  * Jatra 右侧栏
  * 结构：
- *   卡片1 — 关于社区（独立卡片）
+ *   卡片1 — 关于社区（独立卡片，内容来自 settings.site_description）
  *   卡片2 — 统计信息 + 在线用户（合并卡片）
  *   底部  — 页脚信息（版权、链接、NodeBBS 标识）
  */
 export default function RightSidebar({ stats, version }) {
+  const { getSetting } = useSettings();
+  const siteDescription = getSetting('site_description', '');
 
   return (
     <div className='flex flex-col gap-4 w-full'>
       {/* 卡片1：关于社区 */}
-      <div className='jatra-card p-4'>
-        <h3 className='font-bold text-foreground mb-2 text-[13px] flex items-center gap-2'>
-          <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
-          关于社区
-        </h3>
-        <p className='text-xs text-muted-foreground leading-relaxed'>
-          欢迎来到我们的社区！在这里分享知识、交流想法、结交朋友。
-        </p>
-      </div>
+      {siteDescription && (
+        <div className='jatra-card p-4'>
+          <h3 className='font-bold text-foreground mb-2 text-[13px] flex items-center gap-2'>
+            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+            关于社区
+          </h3>
+          <p className='text-xs text-muted-foreground leading-relaxed'>
+            {siteDescription}
+          </p>
+        </div>
+      )}
 
       {/* 卡片2：统计信息 + 在线用户 */}
       {stats ? <StatsPanel stats={stats} /> : null}

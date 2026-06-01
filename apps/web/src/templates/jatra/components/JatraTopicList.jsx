@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Pager } from '@/components/common/Pagination';
 import JatraTopicCard from './JatraTopicCard';
 
@@ -14,6 +15,8 @@ export default function JatraTopicList({
   onPageChange,
   itemInserts,
 }) {
+  const searchParams = useSearchParams();
+  const sort = searchParams.get('sort') || 'latest';
   if (topics.length === 0) {
     return (
       <div className='py-12 text-center text-muted-foreground bg-card rounded-xl border border-border shadow-sm'>
@@ -24,10 +27,10 @@ export default function JatraTopicList({
 
   return (
     <>
-      <div className='flex flex-col'>
+      <div className='flex flex-col gap-3'>
         {topics.map((topic, index) => (
           <Fragment key={topic.id}>
-            <JatraTopicCard topic={topic} />
+            <JatraTopicCard topic={topic} sort={sort} />
             {itemInserts?.[index]}
           </Fragment>
         ))}

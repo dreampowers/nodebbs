@@ -75,7 +75,7 @@ export default function Header() {
     <header className='sticky top-0 z-50'>
       {/* 主导航栏 */}
       <div className='bg-card border-b border-border'>
-        <div className='container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+        <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='flex items-center justify-between h-16 gap-4'>
             {/* 左侧：品牌 + 搜索框 */}
             <div className='flex items-center gap-4 min-w-0'>
