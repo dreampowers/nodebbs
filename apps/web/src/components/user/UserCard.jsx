@@ -81,7 +81,7 @@ export default React.memo(function UserCard({
               user.name || user.username
             )}
           </h4>
-          <UserRoleBadge user={user} className='mt-1' />
+          <UserRoleBadge user={user} max={Infinity} className='mt-1' />
         </div>
 
         {/* 勋章展示 */}

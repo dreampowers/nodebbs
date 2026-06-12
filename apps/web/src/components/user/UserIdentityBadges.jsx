@@ -1,19 +1,62 @@
 import { Badge } from '@/components/ui/badge';
 import UserBadge from '@/extensions/badges/components/Badge';
+import { getRoleBadgeStyle } from '@/lib/roleColor';
 import { cn } from '@/lib/utils';
 
 /**
- * 用户角色 Badge (单个 pill)
+ * 单个角色 pill。有合法自定义颜色时用 GitHub label 风格（淡底+同色边框+同色文字），
+ * 否则回退主题色。
  */
-export function UserRoleBadge({ user, className }) {
-  if (!user?.displayRole) return null;
+function RoleBadge({ role, className }) {
+  const style = getRoleBadgeStyle(role);
   return (
     <Badge
-      variant='secondary'
-      className={cn('bg-primary/10 text-primary', className)}
+      variant={style ? 'outline' : 'secondary'}
+      className={cn(
+        style ? 'border' : 'bg-primary/10 text-primary border-0',
+        className
+      )}
+      style={style || undefined}
     >
-      {user.displayRole.name}
+      {role.name}
     </Badge>
+  );
+}
+
+/**
+ * 用户角色 Badge —— 展示用户的全部 displayRoles（按优先级降序，由后端排序）。
+ * 兼容仅有单个 displayRole 的旧数据。
+ * @param {Object} user - 含 displayRoles（数组）或 displayRole（单个）
+ * @param {number} max - 最多展示的角色数，超出以 +N 收起（默认 3）
+ * @param {string} badgeClassName - 应用到每个角色 pill 与 +N chip 的样式（如紧凑头部的尺寸）
+ */
+export function UserRoleBadge({ user, max = 3, className, badgeClassName }) {
+  const roles =
+    user?.displayRoles?.length
+      ? user.displayRoles
+      : user?.displayRole
+        ? [user.displayRole]
+        : [];
+
+  if (roles.length === 0) return null;
+
+  const shown = roles.slice(0, max);
+  const overflow = roles.length - shown.length;
+
+  return (
+    <span className={cn('inline-flex items-center gap-1.5 flex-wrap', className)}>
+      {shown.map((role) => (
+        <RoleBadge key={role.slug} role={role} className={badgeClassName} />
+      ))}
+      {overflow > 0 && (
+        <Badge
+          variant='secondary'
+          className={cn('bg-muted text-muted-foreground border-0', badgeClassName)}
+        >
+          +{overflow}
+        </Badge>
+      )}
+    </span>
   );
 }
 

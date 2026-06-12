@@ -437,6 +437,7 @@ export default async function postRoutes(fastify, options) {
         if (author) {
           post.userAvatarFrame = author.avatarFrame;
           post.userDisplayRole = author.displayRole || null;
+          post.userDisplayRoles = author.displayRoles || [];
         }
 
         // 被回复用户

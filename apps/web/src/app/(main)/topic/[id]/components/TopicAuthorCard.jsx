@@ -19,6 +19,7 @@ export default function TopicAuthorCard() {
     name: topic.userName,
     avatarFrame: topic.userAvatarFrame,
     displayRole: topic.userDisplayRole,
+    displayRoles: topic.userDisplayRoles,
   };
 
   const displayBadges = (isTopicOwner && user?.badges) ? user.badges : (topic.userBadges || []);

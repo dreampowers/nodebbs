@@ -113,6 +113,18 @@ export default async function userRoute(fastify, options) {
                   icon: { type: 'string' },
                 },
               },
+              displayRoles: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    slug: { type: 'string' },
+                    name: { type: 'string' },
+                    color: { type: ['string', 'null'] },
+                    icon: { type: ['string', 'null'] },
+                  },
+                },
+              },
             },
           },
         },

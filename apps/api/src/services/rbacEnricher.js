@@ -11,22 +11,31 @@ import { getPermissionService } from './permissionService.js';
  */
 export default function registerRbacEnricher(fastify) {
   /**
-   * 从用户角色列表 + 角色展示映射表中提取展示角色
+   * 从用户角色列表 + 角色展示映射表中提取所有展示角色（按优先级降序）
    * @param {Array} userRolesList - 用户的角色列表（来自 user 级缓存，可能含过期的 name/color）
    * @param {Object} rolesDisplayMap - 角色展示信息映射（来自角色级缓存，始终最新）
+   * @returns {Array<{slug,name,color,icon}>}
    */
-  const extractDisplayRole = (userRolesList, rolesDisplayMap) => {
-    const displayRole = userRolesList
+  const extractDisplayRoles = (userRolesList, rolesDisplayMap) => {
+    return userRolesList
       .map(r => rolesDisplayMap[r.id] || r) // 优先用角色级缓存的最新数据，兜底用 user 级数据
       .filter(r => r.isDisplayed)
-      .sort((a, b) => b.priority - a.priority)[0] || null;
+      .sort((a, b) => b.priority - a.priority)
+      .map(r => ({
+        slug: r.slug,
+        name: r.name,
+        color: r.color,
+        icon: r.icon,
+      }));
+  };
 
-    return displayRole ? {
-      slug: displayRole.slug,
-      name: displayRole.name,
-      color: displayRole.color,
-      icon: displayRole.icon,
-    } : null;
+  /**
+   * 将展示角色信息写入 user：displayRoles（全部，按优先级降序）+ displayRole（最高优先级，向后兼容）
+   */
+  const assignDisplayRoles = (user, userRolesList, rolesDisplayMap) => {
+    const displayRoles = extractDisplayRoles(userRolesList, rolesDisplayMap);
+    user.displayRoles = displayRoles;
+    user.displayRole = displayRoles[0] || null;
   };
 
   /**
@@ -41,10 +50,11 @@ export default function registerRbacEnricher(fastify) {
         permissionService.getUserRoles(user.id),
         permissionService.getRolesDisplayMap(),
       ]);
-      user.displayRole = extractDisplayRole(userRolesList, rolesDisplayMap);
+      assignDisplayRoles(user, userRolesList, rolesDisplayMap);
     } catch (error) {
       console.error(`[RBAC增强] 补充用户 ${user.id} 的角色信息失败:`, error);
       user.displayRole = null;
+      user.displayRoles = [];
     }
   };
 
@@ -62,7 +72,7 @@ export default function registerRbacEnricher(fastify) {
       rolesDisplayMap = await permissionService.getRolesDisplayMap();
     } catch (error) {
       console.error('[RBAC增强] 获取角色展示信息失败:', error);
-      users.forEach(u => { u.displayRole = null; });
+      users.forEach(u => { u.displayRole = null; u.displayRoles = []; });
       return;
     }
 
@@ -71,15 +81,17 @@ export default function registerRbacEnricher(fastify) {
       users.map(async (user) => {
         if (!user.id) {
           user.displayRole = null;
+          user.displayRoles = [];
           return;
         }
 
         try {
           const userRolesList = await permissionService.getUserRoles(user.id);
-          user.displayRole = extractDisplayRole(userRolesList, rolesDisplayMap);
+          assignDisplayRoles(user, userRolesList, rolesDisplayMap);
         } catch (error) {
           console.error(`[RBAC增强] 补充用户 ${user.id} 的角色信息失败:`, error);
           user.displayRole = null;
+          user.displayRoles = [];
         }
       })
     );

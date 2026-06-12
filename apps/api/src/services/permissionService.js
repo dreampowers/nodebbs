@@ -650,23 +650,25 @@ class PermissionService {
       this.getRolesDisplayMap(),
     ]);
 
-    // 获取展示角色（最高优先级且允许展示的角色），使用角色级缓存的最新数据
-    const displayRole = userRolesList
+    // 获取展示角色（允许展示的角色，按优先级降序），使用角色级缓存的最新数据
+    const displayRoles = userRolesList
       .map(r => rolesDisplayMap[r.id] || r)
       .filter(r => r.isDisplayed)
-      .sort((a, b) => b.priority - a.priority)[0] || null;
+      .sort((a, b) => b.priority - a.priority)
+      .map(r => ({
+        slug: r.slug,
+        name: r.name,
+        color: r.color,
+        icon: r.icon,
+      }));
 
     return {
       ...user,
       // RBAC 数据
       userRoles: userRolesList,
       permissions: userPermissions,
-      displayRole: displayRole ? {
-        slug: displayRole.slug,
-        name: displayRole.name,
-        color: displayRole.color,
-        icon: displayRole.icon,
-      } : null,
+      displayRoles, // 全部展示角色（按优先级降序）
+      displayRole: displayRoles[0] || null, // 主角色（最高优先级），向后兼容
       // 基于 RBAC 的管理员判断（不依赖旧 role 字段，确保撤销 RBAC 角色后权限立即失效）
       isAdmin: userRolesList.some(r => r.slug === 'admin'),
     };

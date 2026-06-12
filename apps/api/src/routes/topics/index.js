@@ -880,6 +880,7 @@ export default async function topicRoutes(fastify, options) {
         userAvatarFrame: authorInfo.avatarFrame || null,
         userBadges: authorInfo.badges || [],
         userDisplayRole: authorInfo.displayRole || null,
+        userDisplayRoles: authorInfo.displayRoles || [],
         isBlockedUser,
         // 操作权限
         ...topicPermissions,

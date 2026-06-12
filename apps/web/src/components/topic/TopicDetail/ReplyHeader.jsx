@@ -4,6 +4,7 @@ import Link from '@/components/common/Link';
 import { Badge } from '@/components/ui/badge';
 import { Check, Clock, AlertCircle } from 'lucide-react';
 import UserAvatar from '@/components/user/UserAvatar';
+import { UserRoleBadge } from '@/components/user/UserIdentityBadges';
 import Time from '@/components/common/Time';
 import CopyButton from '@/components/common/CopyButton';
 import { toast } from 'sonner';
@@ -31,8 +32,12 @@ export default function ReplyHeader({ reply, topicId, origin, isPending, isRejec
             <Link href={`/users/${reply.username}`} className='font-medium text-foreground hover:underline decoration-primary/50 underline-offset-4 truncate'>
               {reply.userName || reply.userUsername}
             </Link>
-            {reply.userDisplayRole && (
-              <Badge variant="secondary" className="px-1.5 h-4 text-[10px] font-normal bg-primary/10 text-primary border-0 rounded shrink-0">{reply.userDisplayRole.name}</Badge>
+            {(reply.userDisplayRoles?.length || reply.userDisplayRole) && (
+              <UserRoleBadge
+                user={{ displayRoles: reply.userDisplayRoles, displayRole: reply.userDisplayRole }}
+                max={2}
+                badgeClassName="px-1.5 h-4 text-[10px] font-normal rounded shrink-0"
+              />
             )}
             {reply.topicUserId === reply.userId && (
               <Badge variant="secondary" className="px-1.5 h-4 text-[10px] font-normal bg-primary/5 text-primary/70 border-0 rounded shrink-0">楼主</Badge>

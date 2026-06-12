@@ -347,6 +347,18 @@ export default async function userRoutes(fastify, options) {
                 icon: { type: ['string', 'null'] }
               }
             },
+            displayRoles: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  slug: { type: 'string' },
+                  name: { type: 'string' },
+                  color: { type: ['string', 'null'] },
+                  icon: { type: ['string', 'null'] }
+                }
+              }
+            },
             badges: {
               type: 'array',
               // 勋章条目结构与返回字段保持一致
