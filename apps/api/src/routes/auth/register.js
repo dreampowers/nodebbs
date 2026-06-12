@@ -3,7 +3,7 @@ import db from '../../db/index.js';
 import { users } from '../../db/schema.js';
 import { count, eq } from 'drizzle-orm';
 import { validateInvitationCode, markInvitationCodeAsUsed } from '../../services/invitationService.js';
-import { validateUsername } from '../../utils/validateUsername.js';
+import { validateUsername, parseReservedUsernames } from '../../utils/validateUsername.js';
 import { normalizeEmail, normalizeUsername } from '../../utils/normalization.js';
 import { checkSpammer, formatSpamCheckMessage } from '../../services/spamService.js';
 import { DEFAULT_CURRENCY_CODE } from '../../extensions/ledger/constants.js';
@@ -76,7 +76,10 @@ export default async function registerRoute(fastify, options) {
 
       // 规范化并验证用户名格式
       const normalizedUsername = normalizeUsername(username);
-      const usernameValidation = validateUsername(normalizedUsername);
+      const reservedUsernamesRaw = await fastify.settings.get('reserved_usernames', null);
+      const usernameValidation = validateUsername(normalizedUsername, {
+        reservedUsernames: parseReservedUsernames(reservedUsernamesRaw),
+      });
 
       if (!usernameValidation.valid) {
         return reply.code(400).send({ error: usernameValidation.error });

@@ -6,42 +6,171 @@
 
 const USERNAME_REGEX = /^(?=.*[a-z])[a-z0-9_]{3,20}$/;
 
-// 保留用户名列表，可根据你的项目扩展
-const RESERVED_USERNAMES = new Set([
-  // 系统/管理类
-  'admin', 'root', 'system', 'sys', 'support', 'moderator', 'mod',
-  'staff', 'operator', 'owner', 'official', 'team',
-
-  // 功能/路由类
-  'api', 'app', 'assets', 'auth', 'cdn', 'config', 'dashboard', 'dev',
-  'help', 'status', 'setup', 'settings', 'user', 'users', 'profile',
-  'login', 'logout', 'register', 'signup', 'signin', 'reset', 'password',
-  'forgot', 'verify', 'activation', 'token', 'session', 'docs',
-
-  // 常见页面
-  'home', 'index', 'about', 'contact', 'terms', 'privacy', 'policy', 'faq',
-  'news', 'blog', 'feed', 'forum', 'community', 'topic', 'topics', 'post',
-  'posts', 'comment', 'comments', 'category', 'categories', 'tag', 'tags',
-
-  // 技术保留词
-  'api', 'v1', 'v2', 'graphql', 'static', 'public', 'private', 'secure',
-
-  // 通用无效名
-  'test', 'testing', 'demo', 'example', 'sample', 'tmp',
-  'null', 'undefined', 'unknown', 'anonymous', 'guest',
-
-  // 平台保留
-  'nodebbs', 'forum', 'bbs', 'adminpanel', 'backend', 'front', 'service',
-]);
-
 import { normalizeUsername } from './normalization.js';
+
+// 默认保留用户名列表（每行一个），作为后台「保留用户名」设置项的默认值。
+// 管理后台可覆盖此列表；此处是唯一的默认值来源。
+export const DEFAULT_RESERVED_USERNAMES_TEXT = `
+admin*
+root
+system
+sys
+support
+moderator
+mod
+staff
+operator
+owner
+official
+team
+api
+app
+assets
+auth
+cdn
+config
+dashboard
+dev
+help
+status
+setup
+settings
+user
+users
+profile
+login
+logout
+register
+signup
+signin
+reset
+password
+forgot
+verify
+activation
+token
+session
+docs
+home
+index
+about
+contact
+terms
+privacy
+policy
+faq
+news
+blog
+feed
+forum
+community
+topic
+topics
+post
+posts
+comment
+comments
+category
+categories
+tag
+tags
+v1
+v2
+graphql
+static
+public
+private
+secure
+test
+testing
+demo
+example
+sample
+tmp
+null
+undefined
+unknown
+anonymous
+guest
+nodebbs
+bbs
+backend
+front
+service
+`.trim();
+
+/**
+ * 将一段保留用户名文本编译为匹配器。
+ * - 每行一个，亦兼容逗号/空白分隔；逐项小写、去空格
+ * - 以 `*` 结尾的项视为前缀通配符（如 `admin*` 匹配 admin、admin123）
+ * - 其余项为精确匹配；单独一个 `*` 会被忽略（否则将封禁所有用户名）
+ * @param {string} text
+ * @returns {{ exact: Set<string>, prefixes: string[] }}
+ */
+function compileReservedUsernames(text) {
+  const exact = new Set();
+  const prefixes = [];
+
+  for (const token of text.split(/[\s,]+/)) {
+    const normalized = normalizeUsername(token);
+    if (!normalized) continue;
+
+    if (normalized.endsWith('*')) {
+      const prefix = normalized.slice(0, -1);
+      if (prefix) prefixes.push(prefix); // 忽略单独的 '*'
+    } else {
+      exact.add(normalized);
+    }
+  }
+
+  return { exact, prefixes };
+}
+
+// 默认保留用户名匹配器，可根据你的项目扩展（通过后台设置覆盖）
+export const DEFAULT_RESERVED_USERNAMES = compileReservedUsernames(
+  DEFAULT_RESERVED_USERNAMES_TEXT
+);
+
+/**
+ * 将一段文本（每行一个，亦兼容逗号/空白分隔）解析为保留用户名匹配器。
+ * - 当传入值为空或解析结果为空时，回退到默认保留列表
+ * @param {string|null|undefined} rawValue
+ * @returns {{ exact: Set<string>, prefixes: string[] }}
+ */
+export function parseReservedUsernames(rawValue) {
+  if (typeof rawValue === 'string' && rawValue.trim()) {
+    const matcher = compileReservedUsernames(rawValue);
+    if (matcher.exact.size > 0 || matcher.prefixes.length > 0) {
+      return matcher;
+    }
+  }
+  return DEFAULT_RESERVED_USERNAMES;
+}
+
+/**
+ * 判断（已规范化的）用户名是否命中保留列表：精确匹配或任一前缀通配符。
+ * @param {string} normalized
+ * @param {{ exact: Set<string>, prefixes: string[] }} reserved
+ * @returns {boolean}
+ */
+function isReservedUsername(normalized, reserved) {
+  return (
+    reserved.exact.has(normalized) ||
+    reserved.prefixes.some((prefix) => normalized.startsWith(prefix))
+  );
+}
 
 /**
  * 校验用户名是否合法
- * @param username 原始用户名
- * @returns { valid: boolean, error?: string }
+ * @param {string} username 原始用户名
+ * @param {{ reservedUsernames?: { exact: Set<string>, prefixes: string[] } }} [options]
+ *   reservedUsernames - 保留用户名匹配器，默认使用内置 DEFAULT_RESERVED_USERNAMES
+ * @returns {{ valid: boolean, error?: string }}
  */
-export function validateUsername(username) {
+export function validateUsername(
+  username,
+  { reservedUsernames = DEFAULT_RESERVED_USERNAMES } = {}
+) {
   const normalized = normalizeUsername(username);
 
   if (normalized.length < 3 || normalized.length > 20) {
@@ -56,7 +185,7 @@ export function validateUsername(username) {
     };
   }
 
-  if (RESERVED_USERNAMES.has(normalized)) {
+  if (isReservedUsername(normalized, reservedUsernames)) {
     return { valid: false, error: '该用户名已被系统保留，请选择其他名称' };
   }
 

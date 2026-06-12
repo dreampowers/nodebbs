@@ -2,6 +2,7 @@
 
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { SettingSection, SettingItem } from '@/components/common/SettingLayout';
 
 export function UserManagementSettings({ settings, handleChange, handleInputBlur, saving }) {
@@ -71,6 +72,21 @@ export function UserManagementSettings({ settings, handleChange, handleInputBlur
               onCheckedChange={(checked) =>
                 handleChange('username_change_requires_password', checked)
               }
+              disabled={saving}
+            />
+          </SettingItem>
+        )}
+      </SettingSection>
+
+      <SettingSection title="保留用户名" description="禁止注册或改名为这些名称；每行一个，不区分大小写，支持前缀通配符（如 admin* 匹配 admin、admin123）">
+        {settings.reserved_usernames && (
+          <SettingItem layout="vertical">
+            <Textarea
+              key={`reserved-${settings.reserved_usernames.value}`}
+              id='reserved_usernames'
+              className='w-full h-64 resize-y overflow-y-auto field-sizing-fixed font-mono text-sm'
+              defaultValue={settings.reserved_usernames.value}
+              onBlur={(e) => handleInputBlur('reserved_usernames', e)}
               disabled={saving}
             />
           </SettingItem>

@@ -3,6 +3,8 @@
  * 包含所有系统设置的定义、默认值、类型、描述、权限级别等
  */
 
+import { DEFAULT_RESERVED_USERNAMES_TEXT } from '../utils/validateUsername.js';
+
 /**
  * 设置访问级别
  */
@@ -201,6 +203,14 @@ export const SETTING_KEYS = {
     description: '修改用户名是否需要密码验证',
     category: 'user_settings',
     accessLevel: ACCESS_LEVEL.PUBLIC,
+  },
+  RESERVED_USERNAMES: {
+    key: 'reserved_usernames',
+    defaultValue: DEFAULT_RESERVED_USERNAMES_TEXT,
+    valueType: 'string',
+    description: '保留用户名列表（每行一个，不区分大小写）。注册及改名时禁止使用；支持前缀通配符，如 admin* 匹配 admin、admin123',
+    category: 'user_settings',
+    accessLevel: ACCESS_LEVEL.ADMIN,
   },
   ALLOW_EMAIL_CHANGE: {
     key: 'allow_email_change',
