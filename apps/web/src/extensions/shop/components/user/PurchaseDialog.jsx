@@ -27,7 +27,7 @@ import { searchApi } from '@/lib/api';
  * @param {Function} props.onCancel - 取消回调
  * @param {boolean} props.purchasing - 购买进行中
  */
-export function PurchaseDialog({ open, item, accounts = [], onConfirm, onCancel, purchasing }) {
+export function PurchaseDialog({ open, item, accounts = [], onConfirm, onCancel, purchasing, initialMode = 'buy' }) {
   const [mode, setMode] = useState('buy');
   const [receiver, setReceiver] = useState(null);
   const [message, setMessage] = useState('');
@@ -35,12 +35,12 @@ export function PurchaseDialog({ open, item, accounts = [], onConfirm, onCancel,
 
   useEffect(() => {
     if (open) {
-      setMode('buy');
+      setMode(initialMode);
       setReceiver(null);
       setMessage('');
       setQuantity(1);
     }
-  }, [open]);
+  }, [open, initialMode]);
 
   // 搜索用户（响应结构：{ items, total, page, limit }）
   const searchUsers = async (query) => {
@@ -87,11 +87,17 @@ export function PurchaseDialog({ open, item, accounts = [], onConfirm, onCancel,
   const totalPrice = item.price * effectiveQty;
   const canAfford = balance >= totalPrice;
 
+  // 自用购买资格：非消耗品已拥有、或消耗品已达自己的持有上限，则不能再自用购买（但可赠送）
+  const ownedCount = item.ownedCount || 0;
+  const isAlreadyOwned = !isQuantifiable && item.owned === true;
+  const isMaxOwned = isQuantifiable && item.maxOwn !== null && ownedCount >= item.maxOwn;
+  const canBuySelf = !isAlreadyOwned && !isMaxOwned;
+
   const getMaxQuantity = () => {
     let max = 99;
     if (item.stock !== null) max = Math.min(max, item.stock);
-    if (item.maxOwn !== null) {
-      const ownedCount = item.ownedCount || 0;
+    // 赠送模式下接收者上限由后端校验，这里不按赠送者自己的持有量限制
+    if (mode !== 'gift' && item.maxOwn !== null) {
       max = Math.min(max, Math.max(0, item.maxOwn - ownedCount));
     }
     if (item.price > 0) max = Math.min(max, Math.floor(balance / item.price));
@@ -140,7 +146,7 @@ export function PurchaseDialog({ open, item, accounts = [], onConfirm, onCancel,
         {/* Tab 切换 */}
         <Tabs value={mode} onValueChange={setMode} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="buy">自用购买</TabsTrigger>
+            <TabsTrigger value="buy" disabled={!canBuySelf}>自用购买</TabsTrigger>
             <TabsTrigger value="gift">赠送好友</TabsTrigger>
           </TabsList>
         </Tabs>

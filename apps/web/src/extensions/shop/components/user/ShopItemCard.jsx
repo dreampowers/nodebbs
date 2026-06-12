@@ -26,8 +26,14 @@ export function ShopItemCard({ item, userBalance, onPurchase, isAuthenticated })
   const isAlreadyOwned = isNonConsumable && isOwned;
   // 达到持有上限
   const isMaxOwned = !isNonConsumable && item.maxOwn !== null && ownedCount >= item.maxOwn;
+  // 自己已拥有 / 已达上限：不能再自用购买，但仍可赠送给好友
+  const isOwnedOrMaxed = isAlreadyOwned || isMaxOwned;
 
-  const canPurchase = isAuthenticated && !isOutOfStock && canAfford && !isAlreadyOwned && !isMaxOwned;
+  // 自用购买资格
+  const canBuy = isAuthenticated && !isOutOfStock && canAfford && !isOwnedOrMaxed;
+  // 赠送入口：已拥有 / 已达上限且仍有库存时开放
+  // （余额不足在弹窗内提示，接收者持有上限由后端校验）
+  const canGift = isOwnedOrMaxed && isAuthenticated && !isOutOfStock;
 
   // 按钮文案
   const getButtonText = () => {
@@ -50,6 +56,12 @@ export function ShopItemCard({ item, userBalance, onPurchase, isAuthenticated })
             </CardTitle>
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            {/* 非消耗品已拥有标识 */}
+            {isAlreadyOwned && (
+              <Badge variant="secondary" className="text-[10px] md:text-xs px-1 h-5 md:h-auto whitespace-nowrap">
+                已拥有
+              </Badge>
+            )}
             {/* 消耗品/订阅型已拥有数量角标 */}
             {!isNonConsumable && ownedCount > 0 && (
               <Badge variant="secondary" className="text-[10px] md:text-xs px-1 h-5 md:h-auto whitespace-nowrap">
@@ -89,15 +101,26 @@ export function ShopItemCard({ item, userBalance, onPurchase, isAuthenticated })
         <div className="w-full md:w-auto flex justify-center md:justify-start">
              <CreditsBadge amount={item.price} currencyCode={item.currencyCode} variant="default" className="scale-90 md:scale-100 origin-left" />
         </div>
-        <Button
-          onClick={() => onPurchase(item)}
-          disabled={!canPurchase}
-          size="sm"
-          variant={isAlreadyOwned ? 'outline' : 'default'}
-          className="w-full md:w-auto h-8 md:h-10 text-xs md:text-sm"
-        >
-          {getButtonText()}
-        </Button>
+        {canGift ? (
+          <Button
+            onClick={() => onPurchase(item, 'gift')}
+            size="sm"
+            variant="outline"
+            className="w-full md:w-auto h-8 md:h-10 text-xs md:text-sm"
+          >
+            赠送
+          </Button>
+        ) : (
+          <Button
+            onClick={() => onPurchase(item, 'buy')}
+            disabled={!canBuy}
+            size="sm"
+            variant={isOwnedOrMaxed ? 'outline' : 'default'}
+            className="w-full md:w-auto h-8 md:h-10 text-xs md:text-sm"
+          >
+            {getButtonText()}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

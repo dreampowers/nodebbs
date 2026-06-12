@@ -21,6 +21,7 @@ export default function UserShopPage() {
   const [itemType, setItemType] = useState('all');
   const [selectedItem, setSelectedItem] = useState(null);
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
+  const [buyMode, setBuyMode] = useState('buy');
   const [isBuying, setIsBuying] = useState(false);
   
   // 勋章解锁状态
@@ -49,12 +50,13 @@ export default function UserShopPage() {
     fetchAccounts();
   }, [isAuthenticated]);
 
-  const handleBuyClick = (item) => {
+  const handleBuyClick = (item, mode = 'buy') => {
     if (!isAuthenticated) {
       toast.error('请先登录');
       return;
     }
     setSelectedItem(item);
+    setBuyMode(mode);
     setBuyDialogOpen(true);
   };
 
@@ -166,7 +168,7 @@ export default function UserShopPage() {
         accounts={accounts}
         onConfirm={handleBuy}
         onCancel={() => setBuyDialogOpen(false)}
-
+        initialMode={buyMode}
         purchasing={isBuying}
       />
 
