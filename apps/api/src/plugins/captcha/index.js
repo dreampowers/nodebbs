@@ -12,6 +12,7 @@ import { createCaptchaProvider } from './providers/index.js';
 const DEFAULT_SCENES = {
   register: false,
   login: false,
+  passwordReset: false,
 };
 
 async function captchaPlugin(fastify, options) {

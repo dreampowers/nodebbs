@@ -22,6 +22,7 @@ import { Loading } from '@/components/common/Loading';
 const CAPTCHA_SCENES = [
   { key: 'register', label: '用户注册', description: '新用户注册时验证' },
   { key: 'login', label: '用户登录', description: '用户登录时验证' },
+  { key: 'passwordReset', label: '找回密码', description: '找回密码发送验证码时验证' },
 ];
 
 /**

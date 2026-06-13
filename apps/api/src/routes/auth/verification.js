@@ -151,6 +151,30 @@ export default async function verificationRoute(fastify, options) {
       let { identifier } = request.body;
       const { type } = request.body;
 
+      // 找回密码场景的人机验证（/send-code 为多类型共用接口，故在此按类型条件校验）
+      const isPasswordResetType =
+        type === VerificationCodeType.EMAIL_PASSWORD_RESET ||
+        type === VerificationCodeType.PHONE_PASSWORD_RESET;
+      if (isPasswordResetType) {
+        const captchaToken =
+          request.body?.captchaToken || request.headers['x-captcha-token'];
+        const captchaResult = await fastify.captcha.verify(
+          captchaToken,
+          'passwordReset',
+          request.ip
+        );
+        if (!captchaResult.success) {
+          fastify.log.warn(
+            `[CAPTCHA] 找回密码验证失败: reason=${captchaResult.reason}`
+          );
+          return reply.code(403).send({
+            error: captchaResult.message || '请完成人机验证',
+            code: 'CAPTCHA_REQUIRED',
+            reason: captchaResult.reason,
+          });
+        }
+      }
+
       // 规范化标识符
       identifier = normalizeIdentifier(identifier);
 

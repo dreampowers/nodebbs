@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FormMessage } from './FormMessage';
+import { CaptchaWidget } from '@/components/captcha/CaptchaWidget';
 import { Loader2, Mail, Lock, CheckCircle2 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 
@@ -23,6 +24,7 @@ export function ForgotPasswordForm({ onSuccess }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
 
   // 发送验证码
   const handleSendCode = async (e) => {
@@ -45,7 +47,7 @@ export function ForgotPasswordForm({ onSuccess }) {
     setIsLoading(true);
 
     try {
-      const data = await authApi.sendCode(email, 'email_password_reset');
+      const data = await authApi.sendCode(email, 'email_password_reset', captchaToken);
       setSuccess(data.message || '验证码已发送到您的邮箱');
       setStep(2); // 进入下一步
     } catch (err) {
@@ -149,6 +151,9 @@ export function ForgotPasswordForm({ onSuccess }) {
                 我们将向您的邮箱发送验证码
               </p>
             </div>
+
+            {/* 人机验证 */}
+            <CaptchaWidget scene="passwordReset" onVerify={setCaptchaToken} />
           </div>
 
           <div className="pt-2">
@@ -236,6 +241,7 @@ export function ForgotPasswordForm({ onSuccess }) {
                 setConfirmPassword('');
                 setError('');
                 setSuccess('');
+                setCaptchaToken('');
               }}
               disabled={isLoading}
               className='flex-1'

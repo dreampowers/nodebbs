@@ -22,6 +22,7 @@ const CAPTCHA_PROVIDERS = [
     enabledScenes: JSON.stringify({
       register: false,
       login: false,
+      passwordReset: false,
     }),
   },
   {
@@ -36,6 +37,7 @@ const CAPTCHA_PROVIDERS = [
     enabledScenes: JSON.stringify({
       register: false,
       login: false,
+      passwordReset: false,
     }),
   },
   {
@@ -51,6 +53,7 @@ const CAPTCHA_PROVIDERS = [
     enabledScenes: JSON.stringify({
       register: false,
       login: false,
+      passwordReset: false,
     }),
   },
   {
@@ -67,6 +70,7 @@ const CAPTCHA_PROVIDERS = [
     enabledScenes: JSON.stringify({
       register: false,
       login: false,
+      passwordReset: false,
     }),
   },
 ];

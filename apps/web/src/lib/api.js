@@ -163,8 +163,10 @@ export const authApi = {
   },
 
   // 发送验证码（统一接口）
-  async sendCode(identifier, type) {
-    return apiClient.post('/auth/send-code', { identifier, type });
+  async sendCode(identifier, type, captchaToken) {
+    return apiClient.post('/auth/send-code', { identifier, type }, {
+      headers: captchaToken ? { 'x-captcha-token': captchaToken } : {},
+    });
   },
 
   // 校验验证码（仅校验，不参与业务逻辑）
