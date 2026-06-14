@@ -251,3 +251,11 @@ export async function deletePage(id) {
 
   return page || null;
 }
+
+export async function listPublishedPages() {
+  return db
+    .select({ slug: pages.slug, updatedAt: pages.updatedAt })
+    .from(pages)
+    .where(eq(pages.isPublished, true))
+    .orderBy(pages.slug);
+}
