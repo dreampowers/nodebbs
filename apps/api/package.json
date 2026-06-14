@@ -1,6 +1,6 @@
 {
   "name": "nodebbs-api",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "This project was bootstrapped with Fastify-CLI.",
   "type": "module",
   "main": "app.js",
