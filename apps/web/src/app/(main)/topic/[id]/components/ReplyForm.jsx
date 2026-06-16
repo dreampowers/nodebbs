@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Lock, Loader2 } from 'lucide-react';
 import UserAvatar from '@/components/user/UserAvatar';
-import { useReplyForm } from '@/hooks/topic/useReplyForm';
+import { useReplyForm } from '@/modules/forum/hooks/topic/useReplyForm';
 import { Loading } from '@/components/common/Loading';
 
 const MarkdownEditor = dynamic(

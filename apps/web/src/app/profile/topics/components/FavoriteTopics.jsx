@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TopicList } from '@/components/topic/TopicList';
+import { TopicList } from '@/modules/forum/components/topic/TopicList';
 import { userApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Star, Search } from 'lucide-react';

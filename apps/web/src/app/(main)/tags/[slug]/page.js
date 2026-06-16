@@ -1,6 +1,5 @@
 import { getTopicsData, getTagData } from '@/lib/server/topics';
-import { getTemplate } from '@/templates';
-import { VIEWS } from '@/templates/constants';
+import { TagNotFoundView, TagView } from '@/modules/forum/ui';
 
 // 生成页面元数据
 export async function generateMetadata({ params }) {
@@ -38,12 +37,10 @@ export default async function TagTopicListPage({ params, searchParams }) {
   ]);
 
   if (!tag) {
-    const TagNotFoundView = getTemplate(VIEWS.TagNotFoundView);
     return <TagNotFoundView />;
   }
 
   const totalPages = Math.ceil(data.total / LIMIT);
-  const TagView = getTemplate(VIEWS.TagView);
 
   return (
     <TagView

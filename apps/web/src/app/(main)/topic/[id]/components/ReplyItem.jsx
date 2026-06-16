@@ -1,14 +1,14 @@
 'use client';
 
-import ReplyHeader from '@/components/topic/TopicDetail/ReplyHeader';
-import ReplyQuote from '@/components/topic/TopicDetail/ReplyQuote';
-import ReplyBody from '@/components/topic/TopicDetail/ReplyBody';
-import ReplyActionBar from '@/components/topic/TopicDetail/ReplyActionBar';
-import ReplyInlineForm from '@/components/topic/TopicDetail/ReplyInlineForm';
+import ReplyHeader from '@/modules/forum/components/topic/TopicDetail/ReplyHeader';
+import ReplyQuote from '@/modules/forum/components/topic/TopicDetail/ReplyQuote';
+import ReplyBody from '@/modules/forum/components/topic/TopicDetail/ReplyBody';
+import ReplyActionBar from '@/modules/forum/components/topic/TopicDetail/ReplyActionBar';
+import ReplyInlineForm from '@/modules/forum/components/topic/TopicDetail/ReplyInlineForm';
 import ReportDialog from '@/components/common/ReportDialog';
 import { RewardDialog } from '@/extensions/rewards/components/RewardDialog';
 import { RewardListDialog } from '@/extensions/rewards/components/RewardListDialog';
-import { useReplyItem } from '@/hooks/topic/useReplyItem';
+import { useReplyItem } from '@/modules/forum/hooks/topic/useReplyItem';
 
 /**
  * 单条回复项 — 组合原子组件的默认实现

@@ -1,6 +1,5 @@
 import { getCategoriesTree } from '@/lib/server/topics';
-import { getTemplate } from '@/templates';
-import { VIEWS } from '@/templates/constants';
+import { CategoriesView } from '@/modules/forum/ui';
 
 export const metadata = {
   title: '分类',
@@ -9,7 +8,6 @@ export const metadata = {
 
 export default async function CategoriesPage() {
   const categories = await getCategoriesTree();
-  const CategoriesView = getTemplate(VIEWS.CategoriesView);
 
   return (
     <CategoriesView categories={categories} />

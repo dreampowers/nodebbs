@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import PollDialog from '@/components/topic/PollDialog';
+import PollDialog from '@/modules/forum/components/topic/PollDialog';
 import { usePermission } from '@/hooks/usePermission';
 
 export function PollTool({ editor, disabled, config }) {

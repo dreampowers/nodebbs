@@ -11,6 +11,7 @@
 import path from 'node:path';
 import AutoLoad from '@fastify/autoload';
 import { dirname } from './utils/index.js';
+import { modules } from './modules/index.js';
 
 const __dirname = dirname(import.meta.url);
 
@@ -41,6 +42,15 @@ export default async function (fastify, opts) {
     options: Object.assign({}, opts),
     maxDepth: 1,
   });
+
+  /**
+   * 加载业务模块（硬编码，无运行时开关）
+   * 位置：src/modules/  —— 组合根见 src/modules/index.js
+   * 迁移期：模块为占位插件；其 routes/services 仍由下方 routes 自动加载，P3 阶段迁入模块目录。
+   */
+  for (const mod of modules) {
+    fastify.register(mod, Object.assign({}, opts));
+  }
 
   /**
    * 加载 API 路由

@@ -21,8 +21,8 @@ import {
   Trash2,
 } from 'lucide-react';
 import ReportDialog from '@/components/common/ReportDialog';
-import TopicForm from '@/components/topic/TopicForm';
-import { useTopicActions } from '@/hooks/topic/useTopicActions';
+import TopicForm from '@/modules/forum/components/topic/TopicForm';
+import { useTopicActions } from '@/modules/forum/hooks/topic/useTopicActions';
 import { confirm } from '@/components/common/ConfirmPopover';
 
 /**

@@ -6,8 +6,10 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { LedgerProvider } from '@/extensions/ledger/contexts/LedgerContext';
 import { EmojiProvider } from '@/components/common/Emoji/EmojiProvider';
 
-import { getTemplate, getTemplateName } from '@/templates';
-import { LAYOUTS } from '@/templates/constants';
+// 决策 A：模块硬编码（无运行时开关），底座外壳由「当前业务模块」提供。
+// 根布局直接引用 forum 模块的 AppLayout——这是有意的、与后端 modules/index.js 一致的组合根耦合；
+// 换业务系统时在复制阶段改这一行（及 modules 注册），而非运行时切换。
+import { AppLayout as AppLayoutComponent } from '@/modules/forum/ui';
 
 import AutoCheckIn from '@/extensions/rewards/components/AutoCheckIn';
 import ProgressBar from '@/components/common/ProgressBar';
@@ -33,7 +35,6 @@ export const viewport = {
 };
 
 function AppLayout({ children, apiInfo }) {
-  const AppLayoutComponent = getTemplate(LAYOUTS.AppLayout);
   return <AppLayoutComponent apiInfo={apiInfo}>{children}</AppLayoutComponent>;
 }
 
@@ -52,7 +53,7 @@ export default async function RootLayout({ children }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: initScript }} />
       </head>
-      <body data-template={getTemplateName()} className={`antialiased`}>
+      <body data-template="forum" className={`antialiased`}>
         {/* 自定义统计脚本注入 */}
         {analyticsScript && (
           <div 

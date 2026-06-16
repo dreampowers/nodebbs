@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Plus, Edit, Trash2, Lock } from 'lucide-react';
 import FeaturedCategorySortable from './components/FeaturedCategorySortable';
 import { CategoryFormDialog } from './components/CategoryFormDialog';
-import { useCategoryManagement } from '@/hooks/dashboard/useCategoryManagement';
+import { useCategoryManagement } from '@/modules/forum/hooks/dashboard/useCategoryManagement';
 
 export default function CategoriesManagement() {
   const {

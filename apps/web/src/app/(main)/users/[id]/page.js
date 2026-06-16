@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getUserData, getUserTopics, getUserPosts } from '@/lib/server/users';
-import { getTemplate } from '@/templates';
-import { VIEWS } from '@/templates/constants';
+import { UserView } from '@/modules/forum/ui';
 
 // 生成页面元数据（SEO优化）
 export async function generateMetadata({ params }) {
@@ -46,7 +45,6 @@ export default async function UserProfilePage({ params, searchParams }) {
     tab === 'posts' ? getUserPosts(user.id, currentPage, LIMIT) : { items: [], total: 0 },
   ]);
 
-  const UserView = getTemplate(VIEWS.UserView);
 
   return (
     <UserView

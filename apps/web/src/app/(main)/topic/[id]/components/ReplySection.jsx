@@ -2,8 +2,8 @@
 
 import ReplyList from './ReplyList';
 import ReplyForm from './ReplyForm';
-import { useTopicContext } from '@/contexts/TopicContext';
-import { useReplyList } from '@/hooks/topic/useReplyList';
+import { useTopicContext } from '@/modules/forum/contexts/TopicContext';
+import { useReplyList } from '@/modules/forum/hooks/topic/useReplyList';
 
 export default function ReplySection({
   initialPosts,

@@ -7,7 +7,7 @@ import Time from '@/components/common/Time';
 import { Loading } from '@/components/common/Loading';
 import { Pager } from '@/components/common/Pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useUserActivity } from '@/hooks/user/useUserActivity';
+import { useUserActivity } from '@/modules/forum/hooks/useUserActivity';
 
 /**
  * 用户活动 Tab 组件

@@ -1,11 +1,11 @@
 'use client';
 
-import TopicAlerts from '@/components/topic/TopicDetail/TopicAlerts';
-import TopicHeader from '@/components/topic/TopicDetail/TopicHeader';
-import TopicMetaLine from '@/components/topic/TopicDetail/TopicMetaLine';
-import TopicBody from '@/components/topic/TopicDetail/TopicBody';
-import FirstPostActions from '@/components/topic/TopicDetail/FirstPostActions';
-import { useTopicContext } from '@/contexts/TopicContext';
+import TopicAlerts from '@/modules/forum/components/topic/TopicDetail/TopicAlerts';
+import TopicHeader from '@/modules/forum/components/topic/TopicDetail/TopicHeader';
+import TopicMetaLine from '@/modules/forum/components/topic/TopicDetail/TopicMetaLine';
+import TopicBody from '@/modules/forum/components/topic/TopicDetail/TopicBody';
+import FirstPostActions from '@/modules/forum/components/topic/TopicDetail/FirstPostActions';
+import { useTopicContext } from '@/modules/forum/contexts/TopicContext';
 
 /**
  * 话题内容组件（首帖展示）

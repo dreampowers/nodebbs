@@ -1,7 +1,5 @@
-import { getTemplate } from '@/templates';
-import { LAYOUTS } from '@/templates/constants';
+import { PageLayout } from '@/modules/forum/ui';
 
 export default function Layout({ children }) {
-  const PageLayout = getTemplate(LAYOUTS.PageLayout);
   return <PageLayout>{children}</PageLayout>;
 }

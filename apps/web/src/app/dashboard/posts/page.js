@@ -8,7 +8,7 @@ import { Eye, Trash2 } from 'lucide-react';
 import Link from '@/components/common/Link';
 import Time from '@/components/common/Time';
 import { usePermission } from '@/hooks/usePermission';
-import { usePostManagement } from '@/hooks/dashboard/usePostManagement';
+import { usePostManagement } from '@/modules/forum/hooks/dashboard/usePostManagement';
 
 export default function AdminPostsPage() {
   const { hasPermission, hasCondition } = usePermission();

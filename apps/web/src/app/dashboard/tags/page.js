@@ -6,7 +6,7 @@ import { DataTable } from '@/components/common/DataTable';
 import { ActionMenu } from '@/components/common/ActionMenu';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Plus, Edit, Trash2, Tag as TagIcon } from 'lucide-react';
-import { useTagManagement } from '@/hooks/dashboard/useTagManagement';
+import { useTagManagement } from '@/modules/forum/hooks/dashboard/useTagManagement';
 import { TagFormDialog } from './components/TagFormDialog';
 
 export default function TagsManagement() {

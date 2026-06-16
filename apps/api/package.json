@@ -4,6 +4,10 @@
   "description": "This project was bootstrapped with Fastify-CLI.",
   "type": "module",
   "main": "app.js",
+  "imports": {
+    "#core/*": "./src/*",
+    "#modules/*": "./src/modules/*"
+  },
   "directories": {
     "test": "test"
   },

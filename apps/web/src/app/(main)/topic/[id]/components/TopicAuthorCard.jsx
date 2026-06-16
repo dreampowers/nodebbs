@@ -1,6 +1,6 @@
 'use client';
 
-import { useTopicContext } from '@/contexts/TopicContext';
+import { useTopicContext } from '@/modules/forum/contexts/TopicContext';
 import { useAuth } from '@/contexts/AuthContext';
 import UserCard from '@/components/user/UserCard';
 

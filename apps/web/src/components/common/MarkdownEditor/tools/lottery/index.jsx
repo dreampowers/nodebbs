@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import LotteryDialog from '@/components/topic/LotteryDialog';
+import LotteryDialog from '@/modules/forum/components/topic/LotteryDialog';
 import { usePermission } from '@/hooks/usePermission';
 
 export function LotteryTool({ editor, disabled, config }) {

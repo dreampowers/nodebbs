@@ -1,6 +1,6 @@
 'use client';
 
-import TopicTags from '@/components/topic/TopicDetail/TopicTags';
+import TopicTags from '@/modules/forum/components/topic/TopicDetail/TopicTags';
 
 /**
  * 话题元信息组件（侧边栏标签展示）

@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TopicList } from '@/components/topic/TopicList';
+import { TopicList } from '@/modules/forum/components/topic/TopicList';
 import { topicApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { MessageSquare } from 'lucide-react';

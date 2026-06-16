@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { topicApi } from '@/lib/api';
 import { toast } from 'sonner';
-import TopicForm from '@/components/topic/TopicForm';
+import TopicForm from '@/modules/forum/components/topic/TopicForm';
 import RequireAuth from '@/components/auth/RequireAuth';
 
 export default function CreateTopicContent() {

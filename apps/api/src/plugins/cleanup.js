@@ -4,11 +4,6 @@ import { qrLoginRequests, users, moderationLogs } from '../db/schema.js';
 import { and, eq, lt, sql } from 'drizzle-orm';
 import { anonymizeUser } from '../services/user/index.js';
 import moderationLogService from '../services/moderationLogService.js';
-import { cleanupExpiredDraftPolls } from '../services/pollService.js';
-import {
-  cleanupExpiredDraftLotteries,
-  drawDueLotteries,
-} from '../services/lotteryService.js';
 import { EVENTS } from '../constants/events.js';
 
 /**
@@ -151,22 +146,8 @@ async function cleanupPlugin(fastify, options) {
     return result.rowCount || 0;
   });
 
-  // 5. 清理过期草稿投票（创建超过 7 天未绑定 topic）
-  registerCleanupTask('expired-draft-polls', async () => {
-    return await cleanupExpiredDraftPolls();
-  });
-
-  // 6. 到期抽奖自动开奖
-  registerCleanupTask('draw-due-lotteries', async () => {
-    if (!fastify.ledger) return 0;
-    return await drawDueLotteries(fastify.ledger);
-  });
-
-  // 7. 清理过期草稿抽奖（创建超过 7 天未绑定 topic）+ 退还冻结积分
-  registerCleanupTask('expired-draft-lotteries', async () => {
-    if (!fastify.ledger) return 0;
-    return await cleanupExpiredDraftLotteries(fastify.ledger);
-  });
+  // 5. 业务模块（如论坛）通过 fastify.cleanup.registerTask 自行注册清理任务，
+  //    core 不再 import 任何模块服务（依赖反转，见 modules/forum/index.js）。
 
   // 启动定时任务 (每2小时)
   const interval = setInterval(runAllTasks, 2 * 60 * 60 * 1000);

@@ -17,7 +17,7 @@ import {
 import Link from '@/components/common/Link';
 import Time from '@/components/common/Time';
 import { usePermission } from '@/hooks/usePermission';
-import { useTopicManagement } from '@/hooks/dashboard/useTopicManagement';
+import { useTopicManagement } from '@/modules/forum/hooks/dashboard/useTopicManagement';
 
 export default function AdminTopicsPage() {
   const { hasPermission, hasCondition } = usePermission();

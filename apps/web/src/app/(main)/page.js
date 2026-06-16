@@ -1,6 +1,5 @@
 import { getTopicsData } from '@/lib/server/topics';
-import { getTemplate } from '@/templates';
-import { VIEWS } from '@/templates/constants';
+import { HomeView } from '@/modules/forum/ui';
 
 // 页面标题映射
 const PAGE_OPTS = {
@@ -53,7 +52,6 @@ export default async function HomePage({ searchParams }) {
 
   const totalPages = Math.ceil(data.total / LIMIT);
 
-  const HomeView = getTemplate(VIEWS.HomeView);
 
   return (
     <HomeView
