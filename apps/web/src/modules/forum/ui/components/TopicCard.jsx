@@ -19,7 +19,7 @@ export default function TopicCard({ topic, sort = 'latest' }) {
   return (
     <div
       className={cn(
-        'forum-card flex items-start gap-3 p-4 hover:shadow-md transition-shadow group relative',
+        'bg-card border border-border rounded-lg flex items-start gap-3 p-4 hover:shadow-md transition-shadow group relative',
         isPinned && 'bg-primary/5! dark:bg-primary/10! ring-1 ring-primary/10'
       )}
     >

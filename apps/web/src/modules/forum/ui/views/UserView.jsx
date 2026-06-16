@@ -71,7 +71,7 @@ export default function UserView({
     }
 
     return (
-      <div className='forum-card p-8 text-center'>
+      <div className='bg-card border border-border rounded-lg p-8 text-center'>
         <Lock className='h-12 w-12 text-muted-foreground/50 mx-auto mb-4' />
         <h3 className='text-lg font-semibold text-foreground mb-2'>
           {accessMessage?.title}

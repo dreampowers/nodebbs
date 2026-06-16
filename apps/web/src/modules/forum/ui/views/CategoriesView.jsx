@@ -17,7 +17,7 @@ export function CategoriesView({ categories }) {
         </div>
 
         {categories.length === 0 ? (
-          <div className='forum-card text-center py-16'>
+          <div className='bg-card border border-border rounded-lg text-center py-16'>
             <Tag className='h-12 w-12 text-muted-foreground/40 mx-auto mb-4' />
             <h3 className='text-base font-semibold text-foreground mb-1'>暂无分类</h3>
             <p className='text-sm text-muted-foreground'>还没有创建任何分类</p>
@@ -36,7 +36,7 @@ export function CategoriesView({ categories }) {
 
 function CategoryCard({ category }) {
   return (
-    <div className='forum-card p-5 hover:shadow-md transition-shadow'>
+    <div className='bg-card border border-border rounded-lg p-5 hover:shadow-md transition-shadow'>
       <div className='flex items-start gap-3 mb-3'>
         <div
           className='w-3 h-3 rounded-full mt-1.5 shrink-0'

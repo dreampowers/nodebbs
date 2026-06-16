@@ -96,7 +96,7 @@ export default function RankView({ rankType, currentUserId, currencyName, rankin
           </div>
         </div>
 
-        <div className='forum-card p-0 sm:p-6'>
+        <div className='bg-card border border-border rounded-lg p-0 sm:p-6'>
           {ranking.length === 0 ? (
             <div className='text-center py-12'>
               <Trophy className='h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50' />

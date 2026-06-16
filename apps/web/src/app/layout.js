@@ -53,7 +53,7 @@ export default async function RootLayout({ children }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: initScript }} />
       </head>
-      <body data-template="forum" className={`antialiased`}>
+      <body className={`antialiased`}>
         {/* 自定义统计脚本注入 */}
         {analyticsScript && (
           <div 

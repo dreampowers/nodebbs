@@ -50,7 +50,7 @@ export default function TagsView({ tags = [] }) {
             <Link
               key={tag.id}
               href={`/tags/${tag.slug}`}
-              className='group flex flex-col h-full forum-card p-5 hover:shadow-md transition-shadow'
+              className='group flex flex-col h-full bg-card border border-border rounded-lg p-5 hover:shadow-md transition-shadow'
             >
               <div className='flex items-start justify-between'>
                 <div className='flex items-center gap-2'>
@@ -72,7 +72,7 @@ export default function TagsView({ tags = [] }) {
           ))}
         </div>
       ) : (
-        <div className='forum-card text-center py-16'>
+        <div className='bg-card border border-border rounded-lg text-center py-16'>
           <Search className='h-12 w-12 text-muted-foreground/30 mx-auto mb-4' />
           <h3 className='text-lg font-medium text-foreground mb-1'>没有找到相关标签</h3>
           <p className='text-sm text-muted-foreground'>尝试更换搜索关键词</p>

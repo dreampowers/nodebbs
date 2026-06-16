@@ -1,7 +1,6 @@
 import Header from '../globals/Header';
 import Footer from '../globals/Footer';
 import EmailVerificationBanner from '@/components/auth/EmailVerificationBanner';
-import '../styles.css';
 
 export default function AppLayout({ children }) {
 

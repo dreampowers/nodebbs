@@ -18,7 +18,7 @@ export default function RightSidebar({ stats, version }) {
     <div className='flex flex-col gap-4 w-full'>
       {/* 卡片1：关于社区 */}
       {siteDescription && (
-        <div className='forum-card p-4'>
+        <div className='bg-card border border-border rounded-lg p-4'>
           <h3 className='font-bold text-foreground mb-2 text-[13px] flex items-center gap-2'>
             <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
             关于社区
@@ -40,7 +40,7 @@ export default function RightSidebar({ stats, version }) {
 
 function StatsPanel({ stats }) {
   return (
-    <div className='forum-card p-4'>
+    <div className='bg-card border border-border rounded-lg p-4'>
         <h3 className='font-bold text-foreground mb-3 text-[13px] flex items-center gap-2'>
           <span className="w-1.5 h-1.5 rounded-full bg-chart-1 shrink-0"></span>
           社区数据

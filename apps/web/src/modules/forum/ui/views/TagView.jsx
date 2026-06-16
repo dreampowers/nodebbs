@@ -14,7 +14,7 @@ export default function TagView({ tag, sort, data, page, totalPages, limit }) {
     <SidebarLayout>
       <div>
         {/* 标签信息头部 */}
-        <div className='forum-card p-5 mb-4'>
+        <div className='bg-card border border-border rounded-lg p-5 mb-4'>
           <div className='flex items-start gap-4'>
             <div className='p-3 bg-primary/10 rounded-lg'>
               <Tag className='h-6 w-6 text-primary' />
