@@ -2,7 +2,6 @@ import { customAlphabet } from 'nanoid';
 import db from '../db/index.js';
 import { invitationCodes, invitationRules, users } from '../db/schema.js';
 import { eq, and, gte, sql, count, inArray } from 'drizzle-orm';
-import { getPermissionService } from './permissionService.js';
 
 /**
  * 生成唯一的邀请码
@@ -40,10 +39,9 @@ export async function generateUniqueCode(length = 12) {
  * @param {number} userId - 用户ID
  * @returns {Promise<Object>} 邀请规则
  */
-export async function getUserInvitationRule(userId) {
+export async function getUserInvitationRule(userId, permission) {
   // 通过 RBAC 系统获取用户所有角色
-  const permissionService = getPermissionService();
-  const userRoles = await permissionService.getUserRoles(userId);
+  const userRoles = await permission.getUserRoles(userId);
 
   if (!userRoles || userRoles.length === 0) {
     throw new Error('用户没有分配角色');
@@ -103,7 +101,7 @@ export async function getTodayGeneratedCount(userId) {
  */
 export async function generateInvitationCode(userId, options = {}) {
   // 1. 获取用户规则
-  const rule = await getUserInvitationRule(userId);
+  const rule = await getUserInvitationRule(userId, options.permission);
   
   // 2. 检查今日生成数量
   const todayCount = await getTodayGeneratedCount(userId);

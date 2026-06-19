@@ -64,7 +64,7 @@ export default async function invitationsRoutes(fastify) {
         const userId = request.user.id;
 
         // 获取用户规则和今日剩余次数
-        const rule = await getUserInvitationRule(userId);
+        const rule = await getUserInvitationRule(userId, request.server.permission);
         const todayUsed = await getTodayGeneratedCount(userId);
         const todayRemaining = Math.max(0, rule.dailyLimit - todayUsed);
 
@@ -110,6 +110,7 @@ export default async function invitationsRoutes(fastify) {
             note: count > 1 ? `${note || ''}${note ? ' ' : ''}#${i + 1}` : note,
             maxUses,
             expireDays,
+            permission: request.server.permission,
           });
           invitations.push({
             id: invitation.id,
@@ -335,7 +336,7 @@ export default async function invitationsRoutes(fastify) {
         // 获取用户规则
         let rule;
         try {
-          rule = await getUserInvitationRule(userId);
+          rule = await getUserInvitationRule(userId, request.server.permission);
         } catch (error) {
           // 没有找到规则时返回 null quota
           return {
@@ -537,6 +538,7 @@ export default async function invitationsRoutes(fastify) {
           note,
           maxUses,
           expireDays,
+          permission: request.server.permission,
         });
 
         return {

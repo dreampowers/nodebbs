@@ -6,16 +6,14 @@ import { users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import ms from 'ms';
 import env from '../config/env.js';
-import { createPermissionService } from '../services/permissionService.js';
-import registerRbacEnricher from '../services/rbacEnricher.js';
 import { userEnricher } from '../services/user/index.js';
 
 async function authPlugin(fastify) {
   // 注入日志实例到 userEnricher（需在注册 enrichers 之前）
   userEnricher.setLogger(fastify.log);
 
-  // 注册 RBAC 用户增强器（为用户添加 displayRole）
-  registerRbacEnricher(fastify);
+  // RBAC（permission 引擎 + 用户角色富化 + 条件注册表）由 plugins/rbac 插件统一接线，
+  // 此处仅在请求期通过 fastify.permission 使用。
 
   // 注册 Cookie 插件
   await fastify.register(import('@fastify/cookie'), {
@@ -63,10 +61,6 @@ async function authPlugin(fastify) {
 
   // 用户信息缓存 TTL（秒）- 默认 2 分钟
   const USER_CACHE_TTL = env.cache.userTtl;
-
-  // 初始化权限服务
-  const permissionService = createPermissionService(fastify);
-  fastify.decorate('permission', permissionService);
 
   // ============ 封禁状态检查 ============
 
@@ -156,7 +150,7 @@ async function authPlugin(fastify) {
   fastify.decorate('clearUserCache', async function(userId) {
     await fastify.cache.invalidate([`user:${userId}`]);
     // 同时清除权限缓存
-    await permissionService.clearUserPermissionCache(userId);
+    await fastify.permission.clearUserPermissionCache(userId);
     fastify.log.info(`[鉴权] 已清除用户 ${userId} 的缓存`);
   });
 
@@ -198,7 +192,7 @@ async function authPlugin(fastify) {
       }
     }
 
-    request.user = await permissionService.enrichUser(user);
+    request.user = await fastify.permission.enrichUser(user);
     return request.user;
   }
 
@@ -258,7 +252,7 @@ async function authPlugin(fastify) {
       const user = await getUserInfo(request.user.id);
 
       if (user) {
-        request.user = await permissionService.enrichUser(user);
+        request.user = await fastify.permission.enrichUser(user);
       } else {
         request.user = null;
       }

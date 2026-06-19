@@ -5,6 +5,7 @@ import { sql } from 'drizzle-orm';
 import { dirname } from '#core/utils/index.js';
 import db from '#core/db/index.js';
 import { notifications } from '#core/db/schema.js';
+import { categories } from '#modules/forum/db/schema.js';
 import { cleanupExpiredDraftPolls } from './services/pollService.js';
 import {
   cleanupExpiredDraftLotteries,
@@ -47,6 +48,30 @@ async function forumModule(fastify, opts) {
     });
   }
 
+  // RBAC「分类作用域」条件解析器自注册：父分类 → 含子分类的全集（向下继承）。
+  // 让 core 的 permissionService 无需直接查询论坛 categories 表。
+  if (fastify.registerRbacConditionResolver) {
+    fastify.registerRbacConditionResolver('categories', {
+      async expand(parentIds) {
+        if (!parentIds || parentIds.length === 0) return new Set();
+        const allCats = await db
+          .select({ id: categories.id, parentId: categories.parentId })
+          .from(categories);
+        const expanded = new Set(parentIds);
+        const addChildren = (pid) => {
+          for (const c of allCats) {
+            if (c.parentId === pid && !expanded.has(c.id)) {
+              expanded.add(c.id);
+              addChildren(c.id);
+            }
+          }
+        };
+        for (const id of parentIds) addChildren(id);
+        return expanded;
+      },
+    });
+  }
+
   // 论坛 API 路由
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'routes'),
@@ -56,6 +81,6 @@ async function forumModule(fastify, opts) {
 
 export default fp(forumModule, {
   name: 'forum-module',
-  // cleanup 提供 fastify.cleanup.registerTask；db/认证/权限/账本由 plugins+extensions 先行注册
-  dependencies: ['db', 'cleanup'],
+  // cleanup / rbac 提供注册 API；db/认证/权限/账本由 plugins+extensions 先行注册
+  dependencies: ['db', 'cleanup', 'rbac'],
 });

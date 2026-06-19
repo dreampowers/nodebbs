@@ -1,5 +1,4 @@
-import { userEnricher } from './user/index.js';
-import { getPermissionService } from './permissionService.js';
+import { userEnricher } from '../../services/user/index.js';
 
 /**
  * RBAC 用户增强器
@@ -45,7 +44,7 @@ export default function registerRbacEnricher(fastify) {
     if (!user || !user.id) return;
 
     try {
-      const permissionService = getPermissionService();
+      const permissionService = fastify.permission;
       const [userRolesList, rolesDisplayMap] = await Promise.all([
         permissionService.getUserRoles(user.id),
         permissionService.getRolesDisplayMap(),
@@ -64,7 +63,7 @@ export default function registerRbacEnricher(fastify) {
   const enrichUsers = async (users) => {
     if (!users || users.length === 0) return;
 
-    const permissionService = getPermissionService();
+    const permissionService = fastify.permission;
 
     // 角色展示映射只需取一次（角色级缓存）
     let rolesDisplayMap;

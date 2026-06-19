@@ -4,15 +4,14 @@
  */
 
 import { eq, and, isNull, gt, or, desc } from 'drizzle-orm';
-import db from '../db/index.js';
+import db from '../../db/index.js';
 import {
   roles,
   permissions,
   rolePermissions,
   userRoles,
-  categories,
-} from '../db/schema.js';
-import { MAX_UPLOAD_SIZE_ADMIN_KB, DEFAULT_ALLOWED_EXTENSIONS } from '../constants/upload.js';
+} from '../../db/schema.js';
+import { MAX_UPLOAD_SIZE_ADMIN_KB, DEFAULT_ALLOWED_EXTENSIONS } from '../../constants/upload.js';
 
 // 权限缓存 TTL（秒）
 const PERMISSION_CACHE_TTL = 300; // 5 分钟
@@ -123,29 +122,18 @@ class PermissionService {
   }
 
   /**
-   * 展开父分类 ID 到所有子分类 ID（向下继承）
-   * @param {Array<number>} parentIds - 父分类 ID 列表
-   * @returns {Promise<Set<number>>} 展开后的分类 ID 集合
+   * 将 categories 条件值展开为「允许的分类 ID 集合」。
+   * 父分类→子分类的展开依赖论坛 categories 表，由业务模块通过
+   * fastify.registerRbacConditionResolver('categories', { expand }) 注入；
+   * core 不直接依赖任何业务表。未注册解析器时退化为原值集合（不展开子分类）。
+   * @param {Array<number>} parentIds
+   * @returns {Promise<Set<number>>}
    */
-  async _expandCategoryIds(parentIds) {
+  async _resolveAllowedCategoryIds(parentIds) {
     if (!parentIds || parentIds.length === 0) return new Set();
-
-    const allCats = await db.select({ id: categories.id, parentId: categories.parentId }).from(categories);
-    const expandedIds = new Set(parentIds);
-
-    const addChildren = (parentId) => {
-      for (const cat of allCats) {
-        if (cat.parentId === parentId && !expandedIds.has(cat.id)) {
-          expandedIds.add(cat.id);
-          addChildren(cat.id);
-        }
-      }
-    };
-    for (const id of parentIds) {
-      addChildren(id);
-    }
-
-    return expandedIds;
+    const resolver = this.fastify?.rbacConditionResolvers?.get('categories');
+    if (resolver?.expand) return resolver.expand(parentIds);
+    return new Set(parentIds);
   }
 
   /**
@@ -358,7 +346,7 @@ class PermissionService {
 
     // categories: [1, 2, 3] 表示只能在指定父分类（及其子分类）操作
     if (context.categoryId !== undefined && conditions.categories) {
-      const allowedIds = await this._expandCategoryIds(conditions.categories);
+      const allowedIds = await this._resolveAllowedCategoryIds(conditions.categories);
       if (!allowedIds.has(context.categoryId)) {
         return {
           granted: false,
@@ -578,8 +566,8 @@ class PermissionService {
     const parentIds = permission.conditions?.categories;
     if (!parentIds) return null; // 无限制
 
-    // 向下继承：展开父分类到所有子分类
-    const expandedIds = await this._expandCategoryIds(parentIds);
+    // 向下继承：展开父分类到所有子分类（经业务模块注册的解析器）
+    const expandedIds = await this._resolveAllowedCategoryIds(parentIds);
     return [...expandedIds];
   }
 
@@ -1049,18 +1037,12 @@ class PermissionService {
 }
 
 // 创建单例实例工厂
-let instance = null;
-
+/**
+ * 创建权限服务实例（由 plugins/rbac/index.js 装饰为 fastify.permission，作为唯一访问入口）。
+ * 不再保留模块级单例：需要 permission 的代码统一经 fastify.permission（或由调用方传入）获取。
+ */
 export function createPermissionService(fastify) {
-  instance = new PermissionService(fastify);
-  return instance;
-}
-
-export function getPermissionService() {
-  if (!instance) {
-    instance = new PermissionService(null);
-  }
-  return instance;
+  return new PermissionService(fastify);
 }
 
 export default PermissionService;

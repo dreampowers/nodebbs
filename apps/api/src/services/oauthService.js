@@ -11,7 +11,6 @@ import crypto from 'crypto';
 import { normalizeEmail } from '../utils/normalization.js';
 import { generateAutoUsername, generateUniqueUsername } from './user/index.js';
 import { getSetting } from './settingsService.js';
-import { getPermissionService } from './permissionService.js';
 
 /**
  * 生成随机 state 参数（密码学安全）
@@ -74,7 +73,7 @@ export async function handleOAuthLogin(
         throw new Error('系统当前已关闭用户注册，无法通过 OAuth 创建新账号');
       }
 
-      user = await createOAuthUser(profile, provider, { ip });
+      user = await createOAuthUser(profile, provider, { ip, permission: fastify.permission });
       await linkOAuthAccount(user.id, provider, {
         providerAccountId,
         ...tokenData,
@@ -165,7 +164,7 @@ export async function findUserByEmail(email) {
 /**
  * 创建新用户（OAuth 注册）
  */
-export async function createOAuthUser(profile, provider, { ip } = {}) {
+export async function createOAuthUser(profile, provider, { ip, permission } = {}) {
   const { email, name, avatar } = profile;
 
   // 生成唯一用户名
@@ -197,8 +196,7 @@ export async function createOAuthUser(profile, provider, { ip } = {}) {
     .returning();
 
   // 分配默认角色（用户-角色关联）
-  const permissionService = getPermissionService();
-  await permissionService.assignDefaultRoleToUser(newUser.id, { isFirstUser });
+  await permission.assignDefaultRoleToUser(newUser.id, { isFirstUser });
 
   return newUser;
 }
