@@ -1,5 +1,4 @@
 import { getStatsData } from '@/modules/forum/server';
-import { getApiInfo } from '@/lib/server/layout';
 import { AdSlot } from '@/extensions/ads/components';
 import RightSidebar from '../components/RightSidebar';
 
@@ -14,15 +13,12 @@ import RightSidebar from '../components/RightSidebar';
  *   <SidebarLayout rightSidebar={null}>   → 不显示右栏
  */
 export default async function SidebarLayout({ children, rightSidebar }) {
-  const [stats, apiInfo] = await Promise.all([
-    getStatsData(),
-    getApiInfo(),
-  ]);
+  const stats = await getStatsData();
 
   // 如果没有指定自定义右侧栏，使用默认的 RightSidebar
   const sidebarContent = rightSidebar !== undefined
     ? rightSidebar
-    : <RightSidebar stats={stats} version={apiInfo?.version} />;
+    : <RightSidebar stats={stats} />;
 
   return (
     <div className='flex flex-col gap-6'>

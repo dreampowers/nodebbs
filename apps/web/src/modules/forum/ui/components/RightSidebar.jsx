@@ -1,16 +1,16 @@
 'use client';
 
 import { useSettings } from '@/contexts/SettingsContext';
-import SidebarFooter from './SidebarFooter';
 
 /**
- * 右侧栏
+ * 右侧栏（内容卡片）
  * 结构：
  *   卡片1 — 关于社区（独立卡片，内容来自 settings.site_description）
  *   卡片2 — 统计信息 + 在线用户（合并卡片）
- *   底部  — 页脚信息（版权、链接、NodeBBS 标识）
+ *
+ * 注：页脚信息已上移为全局页脚（globals/Footer，由 AppLayout 渲染），不在右侧栏内。
  */
-export default function RightSidebar({ stats, version }) {
+export default function RightSidebar({ stats }) {
   const { getSetting } = useSettings();
   const siteDescription = getSetting('site_description', '');
 
@@ -31,9 +31,6 @@ export default function RightSidebar({ stats, version }) {
 
       {/* 卡片2：统计信息 + 在线用户 */}
       {stats ? <StatsPanel stats={stats} /> : null}
-
-      {/* 底部：页脚信息 */}
-      <SidebarFooter version={version} />
     </div>
   );
 }
