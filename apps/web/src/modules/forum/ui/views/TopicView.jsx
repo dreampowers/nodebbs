@@ -47,7 +47,7 @@ export default function TopicView({
 
         {/* 话题专属右侧栏 */}
         <div className='hidden lg:block w-64 shrink-0'>
-          <StickySidebar className='sticky top-[var(--header-offset)] space-y-4'>
+          <StickySidebar className='space-y-4'>
             <AdSlot slotCode='topic_sidebar_top' />
             <TopicSidebar />
             <AdSlot slotCode='topic_sidebar_bottom' />

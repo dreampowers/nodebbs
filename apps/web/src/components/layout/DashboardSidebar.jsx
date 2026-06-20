@@ -231,13 +231,13 @@ export default function DashboardSidebar() {
   };
 
   return (
-    <>
+    <div className='space-y-3'>
       <div className="p-4 bg-muted rounded-lg">
         <h1 className="text-lg text-center font-semibold text-muted-foreground">管理后台</h1>
       </div>
       <nav className="py-3">
         {filteredNavItems.map(item => renderMenuItem(item, !item.children))}
       </nav>
-    </>
+    </div>
   );
 }

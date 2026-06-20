@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import { Users, MapPin } from 'lucide-react';
 import Link from '@/components/common/Link';
-import StickySidebar from '@/components/common/StickySidebar';
 import Time from '@/components/common/Time';
 import FollowButton from '@/components/user/FollowButton';
 import SendMessageButton from '@/components/user/SendMessageButton';
@@ -33,98 +32,96 @@ export default function UserSidebar({ user }) {
 
   return (
     <div className='w-full lg:w-72 shrink-0'>
-      <StickySidebar className='sticky top-[var(--header-offset)]' enabled={false}>
-        <aside className='space-y-4'>
-          {/* 用户头像和基本信息 */}
-          <UserCard
-            user={user}
-            badges={badges}
-            variant="default"
-            avatarClassName="w-24 h-24"
+      <aside className='sticky top-[var(--header-offset)] space-y-4'>
+        {/* 用户头像和基本信息 */}
+        <UserCard
+          user={user}
+          badges={badges}
+          variant="default"
+          avatarClassName="w-24 h-24"
+        />
+
+        {/* bio / 位置 */}
+        <div className='space-y-1.5 text-sm -mt-1'>
+          {user.bio && (
+            <p className='text-center text-foreground/80 break-words px-2'>
+              {user.bio}
+            </p>
+          )}
+          {user.location && (
+            <div className='flex items-center justify-center gap-1 text-muted-foreground'>
+              <MapPin className='h-3.5 w-3.5 shrink-0' />
+              <span className='break-words'>{user.location}</span>
+            </div>
+          )}
+        </div>
+
+        {/* 主操作区 */}
+        <div className='flex items-center gap-2 w-full'>
+          <FollowButton
+            username={username}
+            initialIsFollowing={isFollowing}
+            onFollowChange={handleFollowChange}
+            className='flex-1'
           />
+          <SendMessageButton
+            recipientId={user.id}
+            recipientName={user.name || user.username}
+            recipientMessagePermission={user.messagePermission}
+            className='flex-1'
+          />
+          <UserMoreMenu
+            userId={user.id}
+            username={user.name || user.username}
+            className='shrink-0 text-muted-foreground hover:text-foreground'
+          />
+        </div>
 
-          {/* bio / 位置 */}
-          <div className='space-y-1.5 text-sm -mt-1'>
-            {user.bio && (
-              <p className='text-center text-foreground/80 break-words px-2'>
-                {user.bio}
-              </p>
-            )}
-            {user.location && (
-              <div className='flex items-center justify-center gap-1 text-muted-foreground'>
-                <MapPin className='h-3.5 w-3.5 shrink-0' />
-                <span className='break-words'>{user.location}</span>
-              </div>
-            )}
-          </div>
+        {/* 粉丝/关注统计 */}
+        <div className='flex items-center justify-center gap-6 text-sm'>
+          <Link
+            href={`/users/${username}/followers`}
+            className='flex items-center gap-1.5 hover:text-primary transition-colors'
+          >
+            <Users className='h-4 w-4 text-muted-foreground' />
+            <span className='font-semibold'>{followerCount}</span>
+            <span className='text-muted-foreground'>粉丝</span>
+          </Link>
+          <div className='w-px h-4 bg-border' />
+          <Link
+            href={`/users/${username}/following`}
+            className='flex items-center gap-1.5 hover:text-primary transition-colors'
+          >
+            <span className='font-semibold'>{followingCount}</span>
+            <span className='text-muted-foreground'>关注</span>
+          </Link>
+        </div>
 
-          {/* 主操作区 */}
-          <div className='flex items-center gap-2 w-full'>
-            <FollowButton
-              username={username}
-              initialIsFollowing={isFollowing}
-              onFollowChange={handleFollowChange}
-              className='flex-1'
-            />
-            <SendMessageButton
-              recipientId={user.id}
-              recipientName={user.name || user.username}
-              recipientMessagePermission={user.messagePermission}
-              className='flex-1'
-            />
-            <UserMoreMenu
-              userId={user.id}
-              username={user.name || user.username}
-              className='shrink-0 text-muted-foreground hover:text-foreground'
-            />
-          </div>
-
-          {/* 粉丝/关注统计 */}
-          <div className='flex items-center justify-center gap-6 text-sm'>
-            <Link
-              href={`/users/${username}/followers`}
-              className='flex items-center gap-1.5 hover:text-primary transition-colors'
-            >
-              <Users className='h-4 w-4 text-muted-foreground' />
-              <span className='font-semibold'>{followerCount}</span>
-              <span className='text-muted-foreground'>粉丝</span>
-            </Link>
-            <div className='w-px h-4 bg-border' />
-            <Link
-              href={`/users/${username}/following`}
-              className='flex items-center gap-1.5 hover:text-primary transition-colors'
-            >
-              <span className='font-semibold'>{followingCount}</span>
-              <span className='text-muted-foreground'>关注</span>
-            </Link>
-          </div>
-
-          {/* 统计信息 */}
-          <div className='card-base p-4'>
-            <h2 className='text-sm font-semibold mb-3'>统计</h2>
-            <div className='space-y-3'>
-              <div className='flex items-center justify-between'>
-                <span className='text-sm text-muted-foreground'>发布话题</span>
-                <span className='text-sm font-semibold'>
-                  {user.topicCount || 0}
-                </span>
-              </div>
-              <div className='flex items-center justify-between'>
-                <span className='text-sm text-muted-foreground'>参与回复</span>
-                <span className='text-sm font-semibold'>
-                  {user.postCount || 0}
-                </span>
-              </div>
-              <div className='flex items-center justify-between'>
-                <span className='text-sm text-muted-foreground'>加入时间</span>
-                <span className='text-sm text-muted-foreground'>
-                  <Time date={user.createdAt} format='YYYY-MM-DD' />
-                </span>
-              </div>
+        {/* 统计信息 */}
+        <div className='card-base p-4'>
+          <h2 className='text-sm font-semibold mb-3'>统计</h2>
+          <div className='space-y-3'>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-muted-foreground'>发布话题</span>
+              <span className='text-sm font-semibold'>
+                {user.topicCount || 0}
+              </span>
+            </div>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-muted-foreground'>参与回复</span>
+              <span className='text-sm font-semibold'>
+                {user.postCount || 0}
+              </span>
+            </div>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-muted-foreground'>加入时间</span>
+              <span className='text-sm text-muted-foreground'>
+                <Time date={user.createdAt} format='YYYY-MM-DD' />
+              </span>
             </div>
           </div>
-        </aside>
-      </StickySidebar>
+        </div>
+      </aside>
     </div>
   );
 }

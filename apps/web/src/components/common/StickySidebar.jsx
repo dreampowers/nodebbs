@@ -44,14 +44,18 @@ function useMediaQuery(query) {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-export default function StickySidebar({ children, className, enabled = true }) {
+export default function StickySidebar({ children, className }) {
   const [open, setOpen] = useState(false);
   // 使用改进的 useMediaQuery hook，SSR 时返回 true（桌面端）
   const isDesktop = useMediaQuery('(min-width: 1024px)');
 
-  // 桌面端或禁用时，直接渲染 aside
-  if (isDesktop || !enabled) {
-    return <aside className={className}>{children}</aside>;
+  // 桌面端：直接渲染 sticky 侧栏（top 偏移默认 --header-offset，可被传入 className 覆盖）
+  if (isDesktop) {
+    return (
+      <aside className={cn('sticky top-[var(--header-offset)]', className)}>
+        {children}
+      </aside>
+    );
   }
 
   return (
@@ -70,9 +74,9 @@ export default function StickySidebar({ children, className, enabled = true }) {
               </DrawerClose>
             </DrawerTitle>
           </DrawerHeader>
-          {/* 移动端覆盖样式 */}
+          {/* 移动端覆盖样式：flex-1 + min-h-0 让内容区在抽屉内可纵向滚动 */}
           <div
-            className={cn(className, 'p-4 static overflow-y-auto')}
+            className={cn(className, 'flex-1 min-h-0 p-4 overflow-y-auto')}
             onClick={(e) => {
               const link = e.target.closest('a');
               if (link) {
