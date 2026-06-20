@@ -10,12 +10,12 @@ import {
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Bell, Check, Trash2 } from 'lucide-react';
-import { getNotificationIcon, getNotificationMessage } from '@/lib/notification';
+import { getNotificationIcon, getNotificationMessage } from './helpers';
 import { notificationApi } from '@/lib/api';
 import Link from '@/components/common/Link';
-import { Loading } from '../common/Loading';
-import UserAvatar from '../user/UserAvatar';
-import Time from '../common/Time';
+import { Loading } from '@/components/common/Loading';
+import UserAvatar from '@/components/user/UserAvatar';
+import Time from '@/components/common/Time';
 
 export default function NotificationPopover() {
   const router = useRouter();

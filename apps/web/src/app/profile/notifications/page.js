@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Bell, CheckCheck, Trash2, Loader2, BellOff } from 'lucide-react';
-import { getNotificationIcon, getNotificationMessage } from '@/lib/notification';
+import { getNotificationIcon, getNotificationMessage } from '@/components/common/Notification';
 import UserAvatar from '@/components/user/UserAvatar';
 import Time from '@/components/common/Time';
 import { Loading } from '@/components/common/Loading';

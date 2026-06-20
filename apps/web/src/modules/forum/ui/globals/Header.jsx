@@ -32,7 +32,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import NotificationPopover from '@/components/common/NotificationPopover';
+import { NotificationPopover } from '@/components/common/Notification';
 import ThemeSwitcher from '@/components/common/ThemeSwitcher';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
