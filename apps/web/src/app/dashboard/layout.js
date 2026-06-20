@@ -12,7 +12,7 @@ export const metadata = {
 
 export default function AdminLayout({ children }) {
   return (
-    <div className='container mx-auto p-2 lg:p-4'>
+    <div className='container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12'>
       <RequireAdmin>
         <div className='flex lg:gap-6'>
           <div className='fixed z-10 -left-full lg:static lg:w-64 shrink-0'>
