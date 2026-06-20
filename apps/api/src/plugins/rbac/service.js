@@ -122,18 +122,17 @@ class PermissionService {
   }
 
   /**
-   * 将 categories 条件值展开为「允许的分类 ID 集合」。
-   * 父分类→子分类的展开依赖论坛 categories 表，由业务模块通过
-   * fastify.registerRbacConditionResolver('categories', { expand }) 注入；
-   * core 不直接依赖任何业务表。未注册解析器时退化为原值集合（不展开子分类）。
+   * 将 categories 条件值展开为「允许的分类 ID 集合」（含子分类）。
+   * 展开逻辑依赖论坛 categories 表，由 forum 模块经 fastify.setCategoryScopeResolver 注入，
+   * 此处经 fastify.resolveCategoryScope 调用；core 不直接依赖任何业务表。
    * @param {Array<number>} parentIds
    * @returns {Promise<Set<number>>}
    */
   async _resolveAllowedCategoryIds(parentIds) {
-    if (!parentIds || parentIds.length === 0) return new Set();
-    const resolver = this.fastify?.rbacConditionResolvers?.get('categories');
-    if (resolver?.expand) return resolver.expand(parentIds);
-    return new Set(parentIds);
+    if (typeof this.fastify?.resolveCategoryScope === 'function') {
+      return this.fastify.resolveCategoryScope(parentIds);
+    }
+    return new Set(parentIds || []);
   }
 
   /**

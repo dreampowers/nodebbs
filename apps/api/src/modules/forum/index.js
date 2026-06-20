@@ -48,27 +48,25 @@ async function forumModule(fastify, opts) {
     });
   }
 
-  // RBAC「分类作用域」条件解析器自注册：父分类 → 含子分类的全集（向下继承）。
+  // RBAC「分类作用域」解析器自注册：父分类 → 含子分类的全集（向下继承）。
   // 让 core 的 permissionService 无需直接查询论坛 categories 表。
-  if (fastify.registerRbacConditionResolver) {
-    fastify.registerRbacConditionResolver('categories', {
-      async expand(parentIds) {
-        if (!parentIds || parentIds.length === 0) return new Set();
-        const allCats = await db
-          .select({ id: categories.id, parentId: categories.parentId })
-          .from(categories);
-        const expanded = new Set(parentIds);
-        const addChildren = (pid) => {
-          for (const c of allCats) {
-            if (c.parentId === pid && !expanded.has(c.id)) {
-              expanded.add(c.id);
-              addChildren(c.id);
-            }
+  if (fastify.setCategoryScopeResolver) {
+    fastify.setCategoryScopeResolver(async (parentIds) => {
+      if (!parentIds || parentIds.length === 0) return new Set();
+      const allCats = await db
+        .select({ id: categories.id, parentId: categories.parentId })
+        .from(categories);
+      const expanded = new Set(parentIds);
+      const addChildren = (pid) => {
+        for (const c of allCats) {
+          if (c.parentId === pid && !expanded.has(c.id)) {
+            expanded.add(c.id);
+            addChildren(c.id);
           }
-        };
-        for (const id of parentIds) addChildren(id);
-        return expanded;
-      },
+        }
+      };
+      for (const id of parentIds) addChildren(id);
+      return expanded;
     });
   }
 
