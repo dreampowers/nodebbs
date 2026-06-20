@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, useId } from 'react';
 import { ZoomIn } from 'lucide-react';
 import { useImagePreview } from '@/components/common/ImagePreview/ImagePreviewContext';
-import { getImageUrl, isLocalImage } from '@/lib/utils';
+import { getImageUrl, isLocalImage } from '@/utils/image';
 
 /**
  * 内容图片组件 - 支持缩略图和点击放大

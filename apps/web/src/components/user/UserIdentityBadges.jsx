@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import UserBadge from '@/extensions/badges/components/Badge';
-import { getRoleBadgeStyle } from '@/lib/roleColor';
+import { getRoleBadgeStyle } from '@/utils/color';
 import { cn } from '@/lib/utils';
 
 /**

@@ -15,7 +15,7 @@ import { filesApi } from '@/lib/api';
 import { toast } from 'sonner';
 import Time from '@/components/common/Time';
 import { usePermission } from '@/hooks/usePermission';
-import { getImageUrl } from '@/lib/utils';
+import { getImageUrl } from '@/utils/image';
 
 // 文件大小格式化
 function formatFileSize(bytes) {

@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
-import { cn, getImageUrl, generateAvatarColor } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { getImageUrl } from '@/utils/image';
+import { generateAvatarColor } from '@/utils/color';
 
 // 预定义动画类名映射
 const ANIMATION_CLASSES = {

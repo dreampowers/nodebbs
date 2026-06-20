@@ -1,6 +1,6 @@
 import Link from '@/components/common/Link';
 import { Tag, BarChart3, Users, MessageSquare, MessageCircle } from 'lucide-react';
-import { formatCompactNumber } from '@/lib/utils';
+import { formatCompactNumber } from '@/utils/format';
 
 // 分类列表组件
 export function CategoryList({ categories, currentPath }) {
