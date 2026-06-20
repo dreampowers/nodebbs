@@ -593,8 +593,8 @@ export const ROLE_PERMISSION_MAP = {
     'topic.lottery.create', 'topic.lottery.delete',
     // 回复：创建、查看、编辑/删除自己的
     'post.create', 'post.read', 'post.update', 'post.delete',
-    // 用户：查看、编辑、注销自己的资料
-    'user.read', 'user.update', 'user.delete',
+    // 用户：查看
+    'user.read',
     // 系统统计
     'system.stats',
     // 上传
@@ -638,7 +638,7 @@ export const ALLOWED_ROLES_PERMISSIONS = {
     'system.stats',
   ],
   user: SYSTEM_PERMISSIONS
-    .filter(p => !p.slug.startsWith('dashboard.'))
+    .filter(p => !p.slug.startsWith('dashboard.') && !['user.update', 'user.delete'].includes(p.slug))
     .map(p => p.slug),
 };
 
