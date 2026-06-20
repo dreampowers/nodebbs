@@ -10,15 +10,9 @@ import RightSidebar from '../components/RightSidebar';
  *
  * 用法:
  *   <SidebarLayout>                       → 默认右栏 + 侧栏广告
- *   <SidebarLayout rightSidebar={null}>   → 不显示右栏
  */
-export default async function SidebarLayout({ children, rightSidebar }) {
+export default async function SidebarLayout({ children }) {
   const stats = await getStatsData();
-
-  // 如果没有指定自定义右侧栏，使用默认的 RightSidebar
-  const sidebarContent = rightSidebar !== undefined
-    ? rightSidebar
-    : <RightSidebar stats={stats} />;
 
   return (
     <div className='flex flex-col gap-6'>
@@ -28,13 +22,11 @@ export default async function SidebarLayout({ children, rightSidebar }) {
           {children}
         </main>
 
-        {sidebarContent && (
-          <aside className='hidden lg:flex flex-col w-64 shrink-0 sticky top-[var(--header-offset)] gap-4'>
-            <AdSlot slotCode='home_sidebar_top' />
-            {sidebarContent}
-            <AdSlot slotCode='home_sidebar_bottom' />
-          </aside>
-        )}
+        <aside className='hidden lg:flex flex-col w-64 shrink-0 sticky top-[var(--header-offset)] gap-4'>
+          <AdSlot slotCode='home_sidebar_top' />
+          <RightSidebar stats={stats} />
+          <AdSlot slotCode='home_sidebar_bottom' />
+        </aside>
       </div>
       <AdSlot slotCode='home_footer_banner' className='rounded-lg' />
     </div>
