@@ -1,5 +1,5 @@
 import { request, getCurrentUser } from '@/lib/server/api';
-import { getDefaultCurrencyName } from '@/lib/server/ledger';
+import { getDefaultCurrencyName } from '@/extensions/ledger/server';
 import { RankView } from '@/modules/forum/ui';
 
 export const metadata = {

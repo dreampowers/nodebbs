@@ -1,4 +1,4 @@
-import { getCategoriesTree } from '@/lib/server/topics';
+import { getCategoriesTree } from '@/modules/forum/server';
 import { CategoriesView } from '@/modules/forum/ui';
 
 export const metadata = {

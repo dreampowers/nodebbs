@@ -1,5 +1,5 @@
 import DesktopNavAside from '../components/DesktopNavAside';
-import { getCategoriesData } from '@/lib/server/topics';
+import { getCategoriesData } from '@/modules/forum/server';
 
 /**
  * PageLayout（服务端组件）

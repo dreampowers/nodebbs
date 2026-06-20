@@ -1,4 +1,4 @@
-import { getTagsData } from '@/lib/server/topics';
+import { getTagsData } from '@/modules/forum/server';
 import { TagsView } from '@/modules/forum/ui';
 
 export const metadata = {

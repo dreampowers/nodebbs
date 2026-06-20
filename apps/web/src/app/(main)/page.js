@@ -1,4 +1,4 @@
-import { getTopicsData } from '@/lib/server/topics';
+import { getTopicsData } from '@/modules/forum/server';
 import { HomeView } from '@/modules/forum/ui';
 
 // 页面标题映射

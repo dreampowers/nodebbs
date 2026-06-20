@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
-import { getTopicData, getPostsData, getRewardEnabledStatus, getRewardStats } from '@/lib/server/topics';
+import { getTopicData, getPostsData } from '@/modules/forum/server';
+import { getRewardEnabledStatus, getRewardStats } from '@/extensions/rewards/server';
 import { getSiteInfo } from '@/lib/server/layout';
 import { TopicView } from '@/modules/forum/ui';
 

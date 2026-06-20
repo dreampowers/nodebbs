@@ -1,4 +1,4 @@
-import { getStatsData } from '@/lib/server/topics';
+import { getStatsData } from '@/modules/forum/server';
 import { getApiInfo } from '@/lib/server/layout';
 import { AdSlot } from '@/extensions/ads/components';
 import RightSidebar from '../components/RightSidebar';

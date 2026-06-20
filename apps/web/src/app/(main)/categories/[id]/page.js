@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getCategoryBySlug, getTopicsData } from '@/lib/server/topics';
+import { getCategoryBySlug, getTopicsData } from '@/modules/forum/server';
 import { CategoryView } from '@/modules/forum/ui';
 
 // 生成页面元数据

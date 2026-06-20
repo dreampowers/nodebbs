@@ -1,4 +1,4 @@
-import { getTopicsData, getTagData } from '@/lib/server/topics';
+import { getTopicsData, getTagData } from '@/modules/forum/server';
 import { TagNotFoundView, TagView } from '@/modules/forum/ui';
 
 // 生成页面元数据

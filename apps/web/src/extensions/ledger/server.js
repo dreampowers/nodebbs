@@ -1,5 +1,12 @@
 import { request } from '@/lib/server/api';
-import { DEFAULT_CURRENCY_CODE } from '@/extensions/ledger/constants';
+import { DEFAULT_CURRENCY_CODE } from './constants';
+
+/**
+ * 账本（ledger）扩展的服务端数据获取。
+ *
+ * 从 lib/server/ledger.js 迁入：编码 ledger 领域端点（/ledger/active-currencies）与货币逻辑，
+ * 复用底座的 request 传输层（lib/server/api.js）。
+ */
 
 /**
  * 获取活跃货币列表 (Server Side)
