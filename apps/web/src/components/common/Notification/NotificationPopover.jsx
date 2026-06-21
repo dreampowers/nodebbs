@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import usePageVisibility from '@/hooks/usePageVisibility';
 import {
   Popover,
   PopoverContent,
@@ -23,6 +24,19 @@ export default function NotificationPopover() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const isVisible = usePageVisibility();
+  const lastFetchTimeRef = useRef(0);
+  const POLL_INTERVAL = 60000; // 60 秒轮询
+
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const data = await notificationApi.getList(1, 1, true);
+      setUnreadCount(data.total || 0);
+      lastFetchTimeRef.current = Date.now();
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+    }
+  }, []);
 
   // 加载通知
   useEffect(() => {
@@ -31,12 +45,18 @@ export default function NotificationPopover() {
     }
   }, [isOpen]);
 
-  // 定期更新未读数量
+  // 只有页面可见时才定时轮询未读数量
   useEffect(() => {
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 60000); // 每分钟更新一次
-    return () => clearInterval(interval);
-  }, []);
+    if (!isVisible) return;
+
+    const remaining = POLL_INTERVAL - (Date.now() - lastFetchTimeRef.current);
+    if (remaining <= 0) {
+      fetchUnreadCount();
+    }
+
+    const id = setInterval(fetchUnreadCount, POLL_INTERVAL);
+    return () => clearInterval(id);
+  }, [isVisible, fetchUnreadCount]);
 
   const fetchNotifications = async () => {
     setIsLoading(true);
@@ -47,15 +67,6 @@ export default function NotificationPopover() {
       console.error('Error fetching notifications:', error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const fetchUnreadCount = async () => {
-    try {
-      const data = await notificationApi.getList(1, 1, true);
-      setUnreadCount(data.total || 0);
-    } catch (error) {
-      console.error('Error fetching unread count:', error);
     }
   };
 
