@@ -32,7 +32,7 @@ import {
 
 export function OperationLogs() {
   const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [total, setTotal] = useState(0);
@@ -85,10 +85,6 @@ export function OperationLogs() {
     setPageSize(newPageSize);
     setPage(1);
   };
-
-  if (loading && logs.length === 0) {
-    return <Loading text='加载中...' />;
-  }
 
   return (
     <div className='space-y-4'>
@@ -146,7 +142,7 @@ export function OperationLogs() {
 
       {/* 日志列表 */}
       {loading ? (
-        <Loading text='加载中...' />
+        <Loading text='加载中...' className='py-12' />
       ) : logs.length === 0 ? (
         <div className='border border-border rounded-lg p-12 bg-card'>
           <div className='text-center text-muted-foreground'>
