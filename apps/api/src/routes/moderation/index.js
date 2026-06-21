@@ -1,6 +1,7 @@
 import db from '../../db/index.js';
 import { reports, posts, topics, users } from '../../db/schema.js';
 import { eq, sql, desc, and, ne, like, or, inArray, count } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { EVENTS } from '../../constants/events.js';
 
 // 生成举报通知消息
@@ -105,7 +106,7 @@ export default async function moderationRoutes(fastify, options) {
 
   // 获取举报列表（管理员/版主）
   fastify.get('/reports', {
-    preHandler: [fastify.requirePermission('dashboard.moderation')],
+    preHandler: [fastify.requirePermission('dashboard.reports')],
     schema: {
       tags: ['moderation'],
       description: '获取举报列表（管理员/版主）',
@@ -139,6 +140,7 @@ export default async function moderationRoutes(fastify, options) {
     }
 
     // 获取举报列表
+    const resolverUsers = alias(users, 'resolverUsers');
     let query = db
       .select({
         id: reports.id,
@@ -150,10 +152,13 @@ export default async function moderationRoutes(fastify, options) {
         reporterName: users.name,
         createdAt: reports.createdAt,
         resolvedAt: reports.resolvedAt,
-        resolverNote: reports.resolverNote
+        resolverNote: reports.resolverNote,
+        resolvedBy: reports.resolvedBy,
+        resolverUsername: resolverUsers.username,
       })
       .from(reports)
-      .innerJoin(users, eq(reports.reporterId, users.id));
+      .innerJoin(users, eq(reports.reporterId, users.id))
+      .leftJoin(resolverUsers, eq(reports.resolvedBy, resolverUsers.id));
 
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
@@ -233,7 +238,7 @@ export default async function moderationRoutes(fastify, options) {
 
   // 处理举报（管理员/版主）
   fastify.patch('/reports/:id/resolve', {
-    preHandler: [fastify.requirePermission('dashboard.moderation')],
+    preHandler: [fastify.requirePermission('dashboard.reports')],
     schema: {
       tags: ['moderation'],
       description: '处理举报（管理员/版主）',
@@ -279,6 +284,29 @@ export default async function moderationRoutes(fastify, options) {
       .where(eq(reports.id, id))
       .returning();
 
+    // 获取导航所需的目标信息
+    let notificationMeta = {
+      reportId: report.id,
+      reportType: report.reportType,
+      targetId: report.targetId,
+    };
+
+    if (report.reportType === 'post') {
+      const [post] = await db
+        .select({ topicId: posts.topicId })
+        .from(posts)
+        .where(eq(posts.id, report.targetId))
+        .limit(1);
+      if (post) notificationMeta.topicId = post.topicId;
+    } else if (report.reportType === 'user') {
+      const [user] = await db
+        .select({ username: users.username })
+        .from(users)
+        .where(eq(users.id, report.targetId))
+        .limit(1);
+      if (user) notificationMeta.targetUsername = user.username;
+    }
+
     // 发送通知给举报人
     try {
       await fastify.notification.send({
@@ -286,16 +314,30 @@ export default async function moderationRoutes(fastify, options) {
         type: action === 'resolve' ? 'report_resolved' : 'report_dismissed',
         triggeredByUserId: request.user.id,
         message: getReportNotificationMessage(report.reportType, action),
-        metadata: {
-          reportId: report.id,
-          reportType: report.reportType,
-          targetId: report.targetId
-        }
+        metadata: notificationMeta
       });
     } catch (error) {
       // 通知发送失败不影响举报处理
       fastify.log.error(error, 'Failed to send report notification');
     }
+
+    // 记录操作日志
+    await fastify.oplog.add({
+      action: action === 'resolve' ? 'report_resolve' : 'report_dismiss',
+      targetType: 'report',
+      targetId: report.id,
+      moderatorId: request.user.id,
+      reason: note || null,
+      previousStatus: 'pending',
+      newStatus: action === 'resolve' ? 'resolved' : 'dismissed',
+      metadata: {
+        reportType: report.reportType,
+        targetId: report.targetId,
+        reporterId: report.reporterId,
+      },
+      ip: request.ip,
+      targetLabel: `${report.reportType}#${report.targetId}`,
+    });
 
     return { 
       message: action === 'resolve' ? '举报已处理' : '举报已驳回',

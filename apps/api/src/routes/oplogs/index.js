@@ -14,8 +14,8 @@ export default async function oplogsRoutes(fastify, options) {
       querystring: {
         type: 'object',
         properties: {
-          targetType: { type: 'string', enum: ['topic', 'post', 'user', 'all'] },
-          action: { type: 'string', enum: ['approve', 'reject', 'ban', 'unban', 'username_change', 'email_bind', 'phone_bind', 'email_change', 'phone_change', 'request_deletion', 'restore', 'anonymize', 'edit_resubmit', 'resubmit', 'all'] },
+          targetType: { type: 'string', enum: ['topic', 'post', 'user', 'report', 'all'] },
+          action: { type: 'string', enum: ['approve', 'reject', 'ban', 'unban', 'username_change', 'email_bind', 'phone_bind', 'email_change', 'phone_change', 'request_deletion', 'restore', 'anonymize', 'edit_resubmit', 'resubmit', 'report_resolve', 'report_dismiss', 'all'] },
           targetId: { type: 'number' },
           moderatorId: { type: 'number' },
           page: { type: 'number', default: 1 },

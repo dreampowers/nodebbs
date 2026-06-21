@@ -100,6 +100,10 @@ export function ReportDetailDialog({
           {report.status !== 'pending' && (
             <>
               <div>
+                <Label className='text-muted-foreground'>处理人</Label>
+                <p>{report.resolverUsername || `#${report.resolvedBy}`}</p>
+              </div>
+              <div>
                 <Label className='text-muted-foreground'>处理时间</Label>
                 <p>
                   <Time date={report.resolvedAt} />

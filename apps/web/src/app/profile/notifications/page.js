@@ -200,6 +200,37 @@ export default function NotificationsPage() {
                           </Link>
                         )}
 
+                        {/* 举报处理结果链接 */}
+                        {(notification.type === 'report_resolved' || notification.type === 'report_dismissed') && (() => {
+                          try {
+                            const meta = typeof notification.metadata === 'string'
+                              ? JSON.parse(notification.metadata)
+                              : notification.metadata;
+                            let href = null;
+                            let label = '查看详情';
+                            if (meta) {
+                              if (meta.reportType === 'topic' && meta.targetId) {
+                                href = `/topic/${meta.targetId}`;
+                                label = '查看话题';
+                              } else if (meta.reportType === 'post' && meta.topicId && meta.targetId) {
+                                href = `/topic/${meta.topicId}#post-${meta.targetId}`;
+                                label = '查看回复';
+                              } else if (meta.reportType === 'user' && meta.targetUsername) {
+                                href = `/users/${meta.targetUsername}`;
+                                label = '查看用户';
+                              }
+                            }
+                            return href ? (
+                              <Link
+                                href={href}
+                                className="text-sm text-primary hover:underline block mb-2 truncate"
+                              >
+                                {label}
+                              </Link>
+                            ) : null;
+                          } catch { return null; }
+                        })()}
+
                         {/* 操作按钮 */}
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           {!notification.isRead && (

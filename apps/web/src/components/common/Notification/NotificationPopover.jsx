@@ -159,6 +159,24 @@ export default function NotificationPopover() {
                 } else if (notification.type === 'gift_received') {
                   // 礼物类型：跳转到我的物品页面
                   linkUrl = '/profile/items';
+                } else if (notification.type === 'report_resolved' || notification.type === 'report_dismissed') {
+                  // 举报处理结果：跳转到被举报的内容
+                  try {
+                    const meta = typeof notification.metadata === 'string'
+                      ? JSON.parse(notification.metadata)
+                      : notification.metadata;
+                    if (meta) {
+                      if (meta.reportType === 'topic' && meta.targetId) {
+                        linkUrl = `/topic/${meta.targetId}`;
+                      } else if (meta.reportType === 'post' && meta.topicId && meta.targetId) {
+                        linkUrl = `/topic/${meta.topicId}#post-${meta.targetId}`;
+                      } else if (meta.reportType === 'user' && meta.targetUsername) {
+                        linkUrl = `/users/${meta.targetUsername}`;
+                      }
+                    }
+                  } catch (e) {
+                    console.error('Error parsing report metadata', e);
+                  }
                 } else if (notification.topicId) {
                   // 其他类型：跳转到对应的话题/帖子
                   linkUrl = `/topic/${notification.topicId}${

@@ -17,12 +17,15 @@ export const OPLOG_ACTIONS = {
   ANONYMIZE: 'anonymize',
   EDIT_RESUBMIT: 'edit_resubmit',
   RESUBMIT: 'resubmit',
+  REPORT_RESOLVE: 'report_resolve',
+  REPORT_DISMISS: 'report_dismiss',
 };
 
 export const OPLOG_TARGET_TYPES = {
   TOPIC: 'topic',
   POST: 'post',
   USER: 'user',
+  REPORT: 'report',
 };
 
 /** 所有合法 action 值集合，用于服务层验证 */

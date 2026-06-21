@@ -7,6 +7,7 @@ export const TARGET_TYPE_LABELS = {
   topic: '话题',
   post: '回复',
   user: '用户',
+  report: '举报',
 };
 
 /**
@@ -32,6 +33,8 @@ export const ACTION_VERB_LABELS = {
   ban: '封禁',
   unban: '解封',
   anonymize: '匿名化',
+  report_resolve: '处理',
+  report_dismiss: '驳回',
 };
 
 /** action → 颜色 class */
@@ -50,6 +53,8 @@ export const ACTION_COLORS = {
   phone_change: 'text-yellow-600',
   request_deletion: 'text-red-600',
   anonymize: 'text-red-600',
+  report_resolve: 'text-green-600',
+  report_dismiss: 'text-yellow-600',
 };
 
 /** 筛选下拉选项 */
@@ -69,6 +74,8 @@ export const ACTION_FILTER_OPTIONS = [
   { value: 'anonymize', label: '匿名化' },
   { value: 'resubmit', label: '重新提交' },
   { value: 'edit_resubmit', label: '编辑后重新提交' },
+  { value: 'report_resolve', label: '处理举报' },
+  { value: 'report_dismiss', label: '驳回举报' },
 ];
 
 /**
