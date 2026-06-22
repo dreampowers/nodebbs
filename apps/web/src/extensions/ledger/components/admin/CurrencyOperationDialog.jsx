@@ -3,8 +3,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Plus, Minus } from 'lucide-react';
-import { UserSearchInput } from './UserSearchInput';
+import { SearchSelect } from '@/components/common/SearchSelect';
 import { FormDialog } from '@/components/common/FormDialog';
+import { userApi } from '@/lib/api';
 import {
     Select,
     SelectContent,
@@ -97,10 +98,17 @@ export function CurrencyOperationDialog({ open, onOpenChange, onSubmit, submitti
             submitClassName={currentConfig.buttonVariant === 'destructive' ? 'bg-destructive hover:bg-destructive/90' : ''}
         >
             <div className="space-y-4">
-                <UserSearchInput
-                    selectedUser={formData.user}
-                    onSelectUser={(user) => setFormData((prev) => ({ ...prev, user }))}
-                />
+                <SearchSelect
+                    value={formData.user}
+                    onChange={(user) => setFormData((prev) => ({ ...prev, user }))}
+                    searchFn={async (query) => {
+                      const data = await userApi.getList({ search: query, limit: 10 });
+                      return data.items || [];
+                    }}
+                    transformData={(user) => ({ id: user.id, label: user.username, description: user.email })}
+                    label="选择用户"
+                    placeholder="搜索用户名或邮箱"
+                  />
 
                 <div className="space-y-2">
                     <Label htmlFor="currency">选择货币</Label>

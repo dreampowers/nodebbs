@@ -14,8 +14,9 @@ import {
 } from '@/components/ui/select';
 import { badgesApi } from '@/extensions/badges/api';
 import { toast } from 'sonner';
-import { UserSearchInput } from '@/extensions/ledger/components/admin/UserSearchInput';
+import { SearchSelect } from '@/components/common/SearchSelect';
 import { FormDialog } from '@/components/common/FormDialog';
+import { userApi } from '@/lib/api';
 
 export function BadgeAssignmentDialog({ open, onOpenChange, badgeList = [] }) {
   const [mode, setMode] = useState('grant'); // 'grant' or 'revoke'
@@ -77,9 +78,16 @@ export function BadgeAssignmentDialog({ open, onOpenChange, badgeList = [] }) {
 
         <div className="grid gap-4 py-2">
           <div className="grid gap-2">
-            <UserSearchInput 
-              onSelectUser={setSelectedUser} 
-              selectedUser={selectedUser} 
+            <SearchSelect
+              value={selectedUser}
+              onChange={setSelectedUser}
+              searchFn={async (query) => {
+                const data = await userApi.getList({ search: query, limit: 10 });
+                return data.items || [];
+              }}
+              transformData={(user) => ({ id: user.id, label: user.username, description: user.email })}
+              label="选择用户"
+              placeholder="搜索用户名或邮箱"
             />
           </div>
 

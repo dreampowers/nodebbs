@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { LedgerTransactionTable } from '../../components/common/LedgerTransactionTable';
-import { UserSearchInput } from '../../components/admin/UserSearchInput';
+import { SearchSelect } from '@/components/common/SearchSelect';
 import { ledgerApi } from '../../api';
+import { userApi } from '@/lib/api';
 import { toast } from 'sonner';
 import {
     Select,
@@ -70,9 +71,16 @@ export function LedgerTransactions() {
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4 mb-4 items-end">
                 <div className="w-full sm:w-75">
-                    <UserSearchInput 
-                        selectedUser={filterUser}
-                        onSelectUser={setFilterUser}
+                    <SearchSelect
+                      value={filterUser}
+                      onChange={setFilterUser}
+                      searchFn={async (query) => {
+                        const data = await userApi.getList({ search: query, limit: 10 });
+                        return data.items || [];
+                      }}
+                      transformData={(user) => ({ id: user.id, label: user.username, description: user.email })}
+                      label="选择用户"
+                      placeholder="搜索用户名或邮箱"
                     />
                 </div>
                 <div className="w-full sm:w-50 space-y-2">
