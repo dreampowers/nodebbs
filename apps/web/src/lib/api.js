@@ -578,7 +578,7 @@ export const conversationApi = {
 
   // 删除单条消息
   async deleteMessage(messageId) {
-    return apiClient.delete(`/messages/${messageId}`);
+    return apiClient.delete(`/conversations/messages/${messageId}`);
   },
 };
 

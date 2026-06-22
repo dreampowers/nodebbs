@@ -33,7 +33,6 @@ async function docsPlugin(fastify, opts) {
         { name: 'moderation', description: '审核工具' },
         { name: 'system', description: '通用' },
         { name: 'blocked-users', description: '拉黑用户' },
-        { name: 'messages', description: '站内信' },
         { name: 'search', description: '搜索功能' },
         { name: 'settings', description: '系统设置' },
         { name: 'oauth', description: 'OAuth 认证' },
@@ -53,6 +52,12 @@ async function docsPlugin(fastify, opts) {
         { name: 'storage-providers', description: '存储服务商管理' },
         { name: 'files', description: '文件管理' },
         { name: 'emojis', description: '表情包管理' },
+        { name: 'conversations', description: '会话系统' },
+        { name: 'lotteries', description: '抽奖系统' },
+        { name: 'oplogs', description: '操作日志' },
+        { name: 'pages', description: '自定义页面' },
+        { name: 'polls', description: '投票功能' },
+        { name: 'sitemap', description: '站点地图' },
       ],
       components: {
         securitySchemes: {
@@ -548,25 +553,21 @@ async function docsPlugin(fastify, opts) {
           },
 
           // ============ 站内信相关 ============
-          // 站内信
+          // 站内信消息
           Message: {
             type: 'object',
             properties: {
               id: { type: 'number', description: '消息ID' },
+              conversationId: { type: 'number', description: '会话ID' },
               senderId: { type: 'number', description: '发送者ID' },
               senderUsername: { type: 'string', description: '发送者用户名' },
+              senderName: { type: 'string', description: '发送者显示名称' },
               senderAvatar: {
                 type: 'string',
                 nullable: true,
                 description: '发送者头像',
               },
               recipientId: { type: 'number', description: '接收者ID' },
-              recipientUsername: { type: 'string', description: '接收者用户名' },
-              subject: {
-                type: 'string',
-                nullable: true,
-                description: '消息主题',
-              },
               content: { type: 'string', description: '消息内容' },
               isRead: { type: 'boolean', description: '是否已读' },
               readAt: {

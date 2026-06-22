@@ -687,4 +687,58 @@ export default async function conversationRoutes(fastify) {
       return { message: 'Conversation deleted successfully' };
     }
   );
+
+  // ============ DELETE /messages/:id — 删除单条消息 ============
+  fastify.delete(
+    '/messages/:id',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['conversations'],
+        description: '删除单条消息（软删除）',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: {
+            id: { type: 'number' },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      const [message] = await db
+        .select()
+        .from(messages)
+        .where(eq(messages.id, id))
+        .limit(1);
+
+      if (!message) {
+        return reply.code(404).send({ error: '消息不存在' });
+      }
+
+      if (
+        message.senderId !== request.user.id &&
+        message.recipientId !== request.user.id
+      ) {
+        return reply
+          .code(403)
+          .send({ error: '你没有权限删除该消息' });
+      }
+
+      const updates = {};
+      if (message.senderId === request.user.id) {
+        updates.isDeletedBySender = true;
+      }
+      if (message.recipientId === request.user.id) {
+        updates.isDeletedByRecipient = true;
+      }
+
+      await db.update(messages).set(updates).where(eq(messages.id, id));
+
+      return { message: 'Message deleted successfully' };
+    }
+  );
 }
