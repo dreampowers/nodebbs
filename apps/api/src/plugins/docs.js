@@ -14,8 +14,8 @@ async function docsPlugin(fastify, opts) {
       },
       servers: [
         {
-          url: 'http://localhost:7100',
-          description: '开发服务器',
+          url: '/',
+          description: '当前站点',
         },
         {
           url: 'https://nodebbs.com',
@@ -511,7 +511,6 @@ async function docsPlugin(fastify, opts) {
                 nullable: true,
                 description: '标签描述',
               },
-              color: { type: 'string', description: '标签颜色' },
               topicCount: { type: 'number', description: '话题数量' },
             },
           },
@@ -522,12 +521,18 @@ async function docsPlugin(fastify, opts) {
             type: 'object',
             properties: {
               id: { type: 'number', description: '通知ID' },
+              userId: { type: 'number', description: '接收用户ID' },
               type: {
                 type: 'string',
                 description: '通知类型',
-                enum: ['reply', 'like', 'mention', 'topic_reply', 'message', 'follow'],
+                enum: ['reply', 'like', 'mention', 'topic_reply', 'message', 'follow', 'reward_topic', 'reward_reply'],
               },
               message: { type: 'string', description: '通知消息' },
+              metadata: {
+                type: 'string',
+                nullable: true,
+                description: '额外数据（JSON，如徽章信息、打赏金额等）',
+              },
               triggeredByUserId: {
                 type: 'number',
                 nullable: true,
@@ -642,6 +647,11 @@ async function docsPlugin(fastify, opts) {
                 description: '目标类型',
               },
               targetId: { type: 'number', description: '目标ID' },
+              targetLabel: {
+                type: 'string',
+                nullable: true,
+                description: '目标快照（如话题标题、用户名等）',
+              },
               moderatorId: { type: 'number', description: '操作者ID' },
               moderatorUsername: { type: 'string', description: '操作者用户名' },
               reason: {
@@ -663,6 +673,11 @@ async function docsPlugin(fastify, opts) {
                 type: 'string',
                 nullable: true,
                 description: '额外元数据（JSON）',
+              },
+              ip: {
+                type: 'string',
+                nullable: true,
+                description: '操作者IP',
               },
               createdAt: {
                 type: 'string',
@@ -691,6 +706,7 @@ async function docsPlugin(fastify, opts) {
                 nullable: true,
                 description: '关联用户ID',
               },
+              attempts: { type: 'number', description: '验证失败次数' },
               expiresAt: {
                 type: 'string',
                 format: 'date-time',
@@ -877,6 +893,16 @@ async function docsPlugin(fastify, opts) {
                 nullable: true,
                 description: '库存',
               },
+              maxOwn: {
+                type: 'number',
+                nullable: true,
+                description: '每人最大拥有数量（null 表示不限）',
+              },
+              consumeType: {
+                type: 'string',
+                enum: ['non_consumable', 'consumable'],
+                description: '消耗类型',
+              },
               isActive: { type: 'boolean', description: '是否上架' },
               metadata: {
                 type: 'string',
@@ -898,6 +924,8 @@ async function docsPlugin(fastify, opts) {
               id: { type: 'number', description: '记录ID' },
               userId: { type: 'number', description: '用户ID' },
               itemId: { type: 'number', description: '商品ID' },
+              quantity: { type: 'number', description: '持有数量' },
+              status: { type: 'string', description: '状态' },
               isEquipped: { type: 'boolean', description: '是否装备' },
               expiresAt: {
                 type: 'string',
@@ -938,6 +966,7 @@ async function docsPlugin(fastify, opts) {
                 nullable: true,
                 description: '解锁条件',
               },
+              displayOrder: { type: 'number', description: '排序' },
               isActive: { type: 'boolean', description: '是否启用' },
               metadata: {
                 type: 'string',
@@ -1136,6 +1165,11 @@ async function docsPlugin(fastify, opts) {
               isDefault: { type: 'boolean', description: '是否默认角色' },
               isDisplayed: { type: 'boolean', description: '是否显示' },
               priority: { type: 'number', description: '优先级' },
+              metadata: {
+                type: 'string',
+                nullable: true,
+                description: '扩展元数据（JSON）',
+              },
               createdAt: {
                 type: 'string',
                 format: 'date-time',
@@ -1364,6 +1398,7 @@ async function docsPlugin(fastify, opts) {
             type: 'object',
             properties: {
               id: { type: 'integer', description: '文件ID' },
+              userId: { type: 'integer', description: '上传者ID' },
               url: { type: 'string', description: '文件访问地址' },
               filename: { type: 'string', description: '存储文件名' },
               originalName: {
@@ -1388,6 +1423,11 @@ async function docsPlugin(fastify, opts) {
                 type: 'string',
                 nullable: true,
                 description: '存储服务商标识',
+              },
+              metadata: {
+                type: 'string',
+                nullable: true,
+                description: '扩展元数据（blurhash、exif 等）',
               },
               createdAt: {
                 type: 'string',
