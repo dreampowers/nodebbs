@@ -85,9 +85,11 @@ export default function Header() {
                   alt='logo'
                   className='h-8 w-auto max-w-32 transition-transform group-hover:scale-105'
                 />
-                <span className='text-2xl font-bold text-foreground tracking-tight hidden sm:inline'>
-                  {settings?.site_name?.value || 'NodeBBS'}
-                </span>
+                {(settings?.show_logo_text?.value !== false) && (
+                  <span className='text-2xl font-bold text-foreground tracking-tight hidden sm:inline'>
+                    {settings?.site_name?.value || 'NodeBBS'}
+                  </span>
+                )}
               </Link>
             </div>
 
