@@ -35,7 +35,10 @@ class ApiClient {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || data.error || 'API 请求失败');
+        const error = new Error(data.message || data.error || 'API 请求失败');
+        error.status = response.status;
+        error.resetTime = data.resetTime;
+        throw error;
       }
 
       return data;

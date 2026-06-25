@@ -1,4 +1,4 @@
-import { request } from '@/lib/server/api';
+import { request, rethrowIfRateLimit } from '@/lib/server/api';
 import { DEFAULT_CURRENCY_CODE } from '@/extensions/ledger/constants';
 import { isCurrencyActive } from '@/extensions/ledger/server';
 
@@ -18,6 +18,7 @@ export async function getRewardEnabledStatus() {
   try {
     return await isCurrencyActive(DEFAULT_CURRENCY_CODE);
   } catch (error) {
+    rethrowIfRateLimit(error);
     console.error('检查积分系统状态失败:', error);
     return false;
   }
@@ -40,6 +41,7 @@ export async function getRewardStats(topic, posts) {
       return stats || {};
     }
   } catch (error) {
+    rethrowIfRateLimit(error);
     console.error('获取打赏统计失败:', error);
   }
   return {};

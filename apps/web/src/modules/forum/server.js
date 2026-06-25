@@ -1,11 +1,11 @@
 import { cache } from 'react';
-import { request } from '@/lib/server/api';
+import { fetchData } from '@/lib/server/api';
 
 /**
  * 论坛模块服务端数据获取。
  *
  * 从 lib/server/topics.js 拆出（话题/分类/帖子/标签/统计 + 分类树组装）。
- * 复用底座的 request 传输层（lib/server/api.js）；本文件只编码 forum 领域端点与逻辑。
+ * 复用底座的 fetchData（lib/server/api.js）：成功取数、失败兜底，限速 429 自动上抛。
  * 注：打赏相关（getRewardStats / getRewardEnabledStatus）属 rewards 扩展，已移至
  * '@/extensions/rewards/server'。
  */
@@ -31,32 +31,27 @@ export async function getTopicsData(params = {}) {
     status,
   } = params;
 
-  try {
-    const queryParams = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-      sort,
-    });
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+    sort,
+  });
 
-    if (categoryId) {
-      queryParams.set('categoryId', categoryId);
-    }
-
-    if (tag) {
-      queryParams.set('tag', tag);
-    }
-
-    if (status) {
-      queryParams.set('status', status);
-    }
-
-    const data = await request(`/topics?${queryParams}`);
-
-    return data || { items: [], total: 0, limit: 20 };
-  } catch (error) {
-    console.error('Error fetching topics:', error);
-    return { items: [], total: 0, limit: 20 };
+  if (categoryId) {
+    queryParams.set('categoryId', categoryId);
   }
+
+  if (tag) {
+    queryParams.set('tag', tag);
+  }
+
+  if (status) {
+    queryParams.set('status', status);
+  }
+
+  return fetchData(`/topics?${queryParams}`, {
+    fallback: { items: [], total: 0, limit: 20 },
+  });
 }
 
 /**
@@ -67,27 +62,21 @@ export async function getTopicsData(params = {}) {
  * @returns {Promise<Array>} 分类列表
  */
 export async function getCategoriesData(params = {}) {
-  try {
-    const { isFeatured, search } = params;
-    const queryParams = new URLSearchParams();
+  const { isFeatured, search } = params;
+  const queryParams = new URLSearchParams();
 
-    if (isFeatured !== undefined) {
-      queryParams.set('isFeatured', isFeatured.toString());
-    }
-
-    if (search) {
-      queryParams.set('search', search);
-    }
-
-    const queryString = queryParams.toString();
-    const url = queryString ? `/categories?${queryString}` : '/categories';
-
-    const data = await request(url);
-    return data || [];
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    return [];
+  if (isFeatured !== undefined) {
+    queryParams.set('isFeatured', isFeatured.toString());
   }
+
+  if (search) {
+    queryParams.set('search', search);
+  }
+
+  const queryString = queryParams.toString();
+  const url = queryString ? `/categories?${queryString}` : '/categories';
+
+  return fetchData(url, { fallback: [] });
 }
 
 /**
@@ -96,13 +85,7 @@ export async function getCategoriesData(params = {}) {
  * @returns {Promise<Object|null>} 分类数据
  */
 export async function getCategoryBySlug(slug) {
-  try {
-    const data = await request(`/categories/${slug}`);
-    return data || null;
-  } catch (error) {
-    console.error('Error fetching category:', error);
-    return null;
-  }
+  return fetchData(`/categories/${slug}`, { fallback: null });
 }
 
 /**
@@ -110,18 +93,11 @@ export async function getCategoryBySlug(slug) {
  * @returns {Promise<Object>} 统计数据
  */
 export async function getStatsData() {
-  try {
-    const data = await request('/stats');
-    return data || null;
-  } catch (error) {
-    console.error('Error fetching stats:', error);
-    return {
-      totalTopics: 0,
-      totalPosts: 0,
-      totalUsers: 0,
-      online: { total: 0 },
-    };
-  }
+  // 成功但无数据时返回 null（沿用原行为）；失败兜底为零值统计对象
+  return fetchData('/stats', {
+    fallback: { totalTopics: 0, totalPosts: 0, totalUsers: 0, online: { total: 0 } },
+    select: (data) => data || null,
+  });
 }
 
 /**
@@ -131,14 +107,11 @@ export async function getStatsData() {
  * @returns {Promise<Array>} 标签列表
  */
 export async function getTagsData(params = {}) {
-  try {
-    const { limit = 20 } = params;
-    const data = await request(`/tags?limit=${limit}`);
-    return data.items || [];
-  } catch (error) {
-    console.error('Error fetching tags:', error);
-    return [];
-  }
+  const { limit = 20 } = params;
+  return fetchData(`/tags?limit=${limit}`, {
+    fallback: [],
+    select: (data) => data?.items || [],
+  });
 }
 
 /**
@@ -148,13 +121,7 @@ export async function getTagsData(params = {}) {
  * @returns {Promise<Object|null>} 话题数据
  */
 export const getTopicData = cache(async (id) => {
-  try {
-    const data = await request(`/topics/${id}`);
-    return data;
-  } catch (error) {
-    console.error('Error fetching topic:', error);
-    return null;
-  }
+  return fetchData(`/topics/${id}`, { fallback: null });
 });
 
 /**
@@ -165,19 +132,13 @@ export const getTopicData = cache(async (id) => {
  * @returns {Promise<Object>} 回复列表数据
  */
 export async function getPostsData(topicId, page = 1, limit = 20) {
-  try {
-    const params = new URLSearchParams({
-      topicId: topicId.toString(),
-      page: page.toString(),
-      limit: limit.toString(),
-    });
+  const params = new URLSearchParams({
+    topicId: topicId.toString(),
+    page: page.toString(),
+    limit: limit.toString(),
+  });
 
-    const data = await request(`/posts?${params}`);
-    return data || { items: [], total: 0 };
-  } catch (error) {
-    console.error('Error fetching posts:', error);
-    return { items: [], total: 0 };
-  }
+  return fetchData(`/posts?${params}`, { fallback: { items: [], total: 0 } });
 }
 
 /**
@@ -186,13 +147,7 @@ export async function getPostsData(topicId, page = 1, limit = 20) {
  * @returns {Promise<Object|null>} 标签数据
  */
 export async function getTagData(slug) {
-  try {
-    const data = await request(`/tags/${slug}`);
-    return data;
-  } catch (error) {
-    console.error('Error fetching tag:', error);
-    return null;
-  }
+  return fetchData(`/tags/${slug}`, { fallback: null });
 }
 
 /**

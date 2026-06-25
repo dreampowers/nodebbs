@@ -26,24 +26,24 @@ export const getApiInfo = cache(async () => {
  * 包括：系统设置、API 信息、当前用户
  */
 export async function getLayoutData() {
-  let settings = null;
-  let apiInfo = null;
-  let activeCurrencies = [];
-
-  try {
-    const [settingsData, apiData, currenciesData] = await Promise.all([
-      request('/settings'),
-      getApiInfo(),
-      request('/ledger/active-currencies'),
-    ]);
-    settings = settingsData;
-    apiInfo = apiData;
-    if (currenciesData && Array.isArray(currenciesData)) {
-      activeCurrencies = currenciesData;
+  // 外壳数据：每个请求独立兜底——任一端点失败（含 429）都不影响其它，
+  // 且不会让限速接管整页外壳。根布局必须无条件渲染，故此处吞掉一切错误。
+  const swallow = (label) => (error) => {
+    // 限速(429)是预期情形，已由页面错误边界向用户呈现 RateLimitView，
+    // 外壳无需重复报错刷屏；其余真实错误（5xx/网络等）照常记录。
+    if (error?.status !== 429) {
+      console.error(`[layout] ${label}`, error);
     }
-  } catch (error) {
-    console.error('Error fetching data for layout:', error);
-  }
+    return null;
+  };
+
+  const [settings, apiInfo, currenciesData] = await Promise.all([
+    request('/settings').catch(swallow('/settings')),
+    getApiInfo().catch(swallow('/')),
+    request('/ledger/active-currencies').catch(swallow('/ledger/active-currencies')),
+  ]);
+
+  const activeCurrencies = Array.isArray(currenciesData) ? currenciesData : [];
 
   // 获取当前用户 (SSR)
   const user = await getCurrentUser();

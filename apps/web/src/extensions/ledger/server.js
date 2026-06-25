@@ -1,11 +1,11 @@
-import { request } from '@/lib/server/api';
+import { fetchData, rethrowIfRateLimit } from '@/lib/server/api';
 import { DEFAULT_CURRENCY_CODE } from './constants';
 
 /**
  * 账本（ledger）扩展的服务端数据获取。
  *
  * 从 lib/server/ledger.js 迁入：编码 ledger 领域端点（/ledger/active-currencies）与货币逻辑，
- * 复用底座的 request 传输层（lib/server/api.js）。
+ * 复用底座的 fetchData（lib/server/api.js）。
  */
 
 /**
@@ -13,13 +13,10 @@ import { DEFAULT_CURRENCY_CODE } from './constants';
  * @returns {Promise<Array>}
  */
 export async function getActiveCurrencies() {
-    try {
-        const activeCurrencies = await request('/ledger/active-currencies');
-        return Array.isArray(activeCurrencies) ? activeCurrencies : [];
-    } catch (error) {
-        console.error('[Server] Failed to fetch active currencies', error);
-        return [];
-    }
+    return fetchData('/ledger/active-currencies', {
+        fallback: [],
+        select: (data) => (Array.isArray(data) ? data : []),
+    });
 }
 
 /**
@@ -32,6 +29,7 @@ export async function getDefaultCurrencyName() {
         const defaultCurrency = currencies.find(c => c.code === DEFAULT_CURRENCY_CODE);
         return defaultCurrency?.name || DEFAULT_CURRENCY_CODE;
     } catch (error) {
+        rethrowIfRateLimit(error);
         console.error('[Server] Failed to get default currency name', error);
         return DEFAULT_CURRENCY_CODE;
     }
@@ -48,6 +46,7 @@ export async function isCurrencyActive(currencyCode = DEFAULT_CURRENCY_CODE) {
         const activeCurrencies = await getActiveCurrencies();
         return activeCurrencies.some(c => c.code === currencyCode);
     } catch (error) {
+        rethrowIfRateLimit(error);
         console.error(`[Server] Failed to check status for currency ${currencyCode}`, error);
         return false;
     }

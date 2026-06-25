@@ -61,7 +61,6 @@ async function rateLimitPlugin(fastify, opts) {
       return {
         error: '请求过于频繁，请稍后再试',
         statusCode: 429,
-        retryAfter: context.after,
         resetTime: new Date(Date.now() + context.ttl).toISOString(),
       };
     },

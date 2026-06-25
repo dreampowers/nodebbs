@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { request } from './api';
+import { fetchData } from './api';
 
 export function normalizeSlugSegments(slug) {
   return (Array.isArray(slug) ? slug : [slug])
@@ -19,13 +19,10 @@ export function encodeSlugPath(slug) {
 }
 
 const fetchPageByEncodedSlug = cache(async (encodedSlug) => {
-  try {
-    return await request(`/pages/${encodedSlug}`, {
-      cache: 'no-store',
-    });
-  } catch {
-    return null;
-  }
+  return fetchData(`/pages/${encodedSlug}`, {
+    fallback: null,
+    options: { cache: 'no-store' },
+  });
 });
 
 export async function getPageBySlug(slug) {
